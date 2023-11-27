@@ -35,8 +35,10 @@ export default function BadgeAdmin() {
   }
 
   const navigateConfirmation = () => {
-    if (rows.length === 0) notify();
-    else navigate("/confirmation");
+    if (rows.length === 0) {
+      notify();
+      navigate("/confirmation");
+    } else navigate("/confirmation");
   };
 
   React.useEffect(() => {

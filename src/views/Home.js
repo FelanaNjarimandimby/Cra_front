@@ -1,7 +1,7 @@
 import React from "react";
 import TopNav from "../components/TopNav";
 import Navbar from "../components/Navbar";
-import HotelsAndRestaurants from "../components/HotelsAndRestaurants";
+import Destinations from "../components/Destinations";
 import Footer from "../components/Footer";
 import { Typography } from "@mui/material";
 
@@ -10,7 +10,7 @@ const Home = () => {
     <>
       <TopNav />
       <Navbar />
-      <HotelsAndRestaurants />
+      <Destinations />
       <Typography
         sx={{
           fontFamily: "Poppins",

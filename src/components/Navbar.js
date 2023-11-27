@@ -1,15 +1,8 @@
-import { useState } from "react";
-
 import Container from "@mui/material/Container";
-
-import avion2 from "../static/images/avion2.jpg";
 import Avion4 from "../static/images/Avion4.jpg";
 import { Box } from "@mui/system";
-import Nav from "./Nav";
 import { Typography } from "@mui/material";
-import MainButton from "./MainButton";
 import SearchNav from "./SearchNav";
-import Travel from "./Travel";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";

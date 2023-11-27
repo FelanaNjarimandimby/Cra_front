@@ -1,13 +1,4 @@
-import {
-  Box,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Grid, TextField } from "@mui/material";
 import React from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -22,19 +13,12 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormLabel from "@mui/material/FormLabel";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
-import MiniDrawer from "../../views/MiniDrawer";
-import Fab from "@mui/material/Fab";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { useReactToPrint } from "react-to-print";
 
@@ -59,6 +43,18 @@ const ItineraireAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -110,7 +106,7 @@ const ItineraireAdmin = () => {
 
     {
       field: "action",
-      width: 70,
+      width: 100,
       headerName: "Action",
       renderCell: (params) => (
         <>
@@ -130,7 +126,9 @@ const ItineraireAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -138,34 +136,6 @@ const ItineraireAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteItineraire(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -210,6 +180,11 @@ const ItineraireAdmin = () => {
   const [ItineraireDepart, setItineraireDepart] = React.useState("");
   const [ItineraireArrive, setItineraireArrive] = React.useState("");
 
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
+
   async function deleteItineraire(index) {
     await axios
       .delete(variables.API_URL + "itineraire/" + index)
@@ -235,7 +210,7 @@ const ItineraireAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -349,7 +324,8 @@ const ItineraireAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification d'un itinéraire
@@ -415,7 +391,8 @@ const ItineraireAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'un itinéraire
@@ -468,6 +445,35 @@ const ItineraireAdmin = () => {
                 </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer l'itinéraire avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteItineraire(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

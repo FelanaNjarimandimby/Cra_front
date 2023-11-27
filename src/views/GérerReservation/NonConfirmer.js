@@ -10,7 +10,7 @@ import ClientAdmin from "../GérerClient/ClientAdmin";
 import styled from "@mui/system/styled";
 import NavAdmin from "../../components/ComponentsAdmin/NavAdmin";
 import NavAdmin2 from "../../components/ComponentsAdmin/NavAdmin2";
-import ReservationConfirmation from "./ReservationConfirmation";
+import ReservationNonConfirme from "./ReservationNonConfirme";
 import { Home } from "@mui/icons-material";
 
 const Item = styled("div")(({ theme }) => ({
@@ -22,7 +22,7 @@ const Item = styled("div")(({ theme }) => ({
   textAlign: "center",
 }));
 
-const Confirmer = () => {
+const NonConfirmer = () => {
   return (
     <>
       <NavAdmin2 />
@@ -64,10 +64,10 @@ const Confirmer = () => {
             </Item>
           </Grid>
         </Box>
-        <ReservationConfirmation />
+        <ReservationNonConfirme />
       </Container>
     </>
   );
 };
 
-export default Confirmer;
+export default NonConfirmer;

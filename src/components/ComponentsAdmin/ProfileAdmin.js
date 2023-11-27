@@ -60,6 +60,29 @@ export default function ProfilAdmin() {
       progress: undefined,
       theme: "light",
     });
+  const notifyDanger = () => {
+    toast.error("Une erreur est survenue !", {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+  const notifyEdit = () =>
+    toast.success("Modification avec succès!", {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
 
   //Dialog
   const [Open, setOpen] = React.useState(false);
@@ -137,7 +160,7 @@ export default function ProfilAdmin() {
         AgentFonction: AgentFonction,
         AgentMotPasse: AgentMotPasse,
       });
-      alert("Modification avec succès");
+      notifyEdit();
       setId("");
       setNom("");
       setPrenom("");
@@ -149,7 +172,7 @@ export default function ProfilAdmin() {
       handleCloseChild();
       VoirDetail();
     } catch (error) {
-      alert(error);
+      notifyDanger();
     }
   }
 
@@ -197,7 +220,7 @@ export default function ProfilAdmin() {
             fontWeight: "400",
             fontSize: "14px",
             lineHeight: "21px",
-            color: "#fff",
+            color: "#000",
             opacity: "0.5",
           }}
         >
@@ -236,7 +259,9 @@ export default function ProfilAdmin() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 44, height: 44 }} />
+            <Avatar sx={{ width: 44, height: 44 }}>
+              {AgentNom ? AgentNom[0].toUpperCase() : ""}
+            </Avatar>
           </IconButton>
         </Tooltip>
       </Box>
@@ -304,65 +329,203 @@ export default function ProfilAdmin() {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button autoFocus onClick={Deconnecter}>
+            <Button
+              autoFocus
+              onClick={Deconnecter}
+              variant="contained"
+              size="small"
+            >
               Continuer
             </Button>
-            <Button onClick={handleClickClose} autoFocus>
+            <Button
+              onClick={handleClickClose}
+              autoFocus
+              variant="outlined"
+              size="small"
+              color="error"
+            >
               Annuler
             </Button>
           </DialogActions>
         </Dialog>
       </div>
 
-      <div>
-        <Modal
-          open={openProfile}
-          onClose={handleProfileClose}
-          aria-labelledby="parent-modal-title"
-          aria-describedby="parent-modal-description"
+      <Dialog
+        open={openProfile}
+        onClose={handleProfileClose}
+        aria-labelledby="parent-modal-title"
+        aria-describedby="parent-modal-description"
+      >
+        <DialogTitle
+          id="alert-dialog-title"
+          sx={{
+            margin: "auto",
+          }}
         >
-          <Box
+          <Avatar
             sx={{
-              ...style,
-              width: 300,
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "column",
-              gap: "8px",
+              width: 56,
+              height: 56,
+              margin: "auto",
             }}
           >
-            <Avatar sx={{ width: 56, height: 56 }} />
-            <h2>
-              {AgentNom
-                ? "Bienvenue" + " " + AgentNom
-                : "Vous n'êtes pas connecté"}
-            </h2>
-            <h5 id="parent-modal-title">A propos de vous</h5>
+            {AgentNom ? AgentNom[0].toUpperCase() : ""}
+          </Avatar>
+          {AgentNom ? "Bienvenue" + " " + AgentNom : "Vous n'êtes pas connecté"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
             <p id="parent-modal-description"></p>
-
-            <p>Nom: {AgentNom}</p>
-            <p>Prénom: {AgentPrenom}</p>
-            <p>Genre: {AgentGenre}</p>
-            <p>Mail: {AgentMail}</p>
-            <p>Adresse:{AgentAdresse}</p>
-            <p>Contact:{AgentContact}</p>
-            <p>Genre: {AgentFonction}</p>
-
-            <box
+            <Typography
+              display="flex"
+              alignItems="center"
               sx={{
-                ...style,
-                width: 400,
-                display: "flex",
-                alignItems: "left",
-                gap: "8px",
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
               }}
             >
-              <Button onClick={handleOpenChild}>Modifier</Button>
-              <Button onClick={handleProfileClose}>Retour</Button>
-            </box>
-          </Box>
-        </Modal>
-      </div>
+              Nom :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {AgentNom}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Prénom :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {AgentPrenom}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Genre :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {AgentGenre}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Mail :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {AgentMail}
+              </Typography>
+            </Typography>
+
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Adresse :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {AgentAdresse}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Fonction :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {AgentFonction}
+              </Typography>
+            </Typography>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleOpenChild} variant="contained" size="small">
+            Modifier
+          </Button>
+          <Button
+            onClick={handleProfileClose}
+            autoFocus
+            variant="outlined"
+            size="small"
+            color="error"
+          >
+            Fermer
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Modal
         open={openChild}
@@ -503,18 +666,11 @@ export default function ProfilAdmin() {
                 />
               </Grid>
             </Grid>
-            <box
-              sx={{
-                ...style,
-                width: 400,
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <Button onClick={() => UpdateAgent(id)}>Valider</Button>
-              <Button onClick={handleCloseChild}>Ok</Button>
-            </box>
+            <br />
+            <Button onClick={() => UpdateAgent(id)}>Valider</Button>
+            <Button onClick={handleCloseChild} color="error">
+              Annuler
+            </Button>
           </Box>
         </Box>
       </Modal>

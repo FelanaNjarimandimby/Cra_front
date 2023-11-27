@@ -21,13 +21,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
 import { useReactToPrint } from "react-to-print";
-import {
-  InputLabel,
-  Select,
-  FormControl,
-  MenuItem,
-  FormHelperText,
-} from "@mui/material";
+import { InputLabel, Select, FormControl, MenuItem } from "@mui/material";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -50,6 +44,18 @@ const NatureMarchandiseAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -96,8 +102,8 @@ const NatureMarchandiseAdmin = () => {
   const [rows, setRows] = React.useState([]);
   const column = [
     { field: "id", headerName: "ID", width: 20 },
-    { field: "NatureMarchandiseLibelle", headerName: "Libelle", width: 200 },
-    { field: "TarifLibelle", headerName: "Tarif", width: 200 },
+    { field: "NatureMarchandiseLibelle", headerName: "Libelle", width: 300 },
+    { field: "TarifLibelle", headerName: "Tarif", width: 250 },
     {
       field: "action",
       width: 150,
@@ -120,7 +126,9 @@ const NatureMarchandiseAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -128,34 +136,6 @@ const NatureMarchandiseAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteNature(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -208,6 +188,11 @@ const NatureMarchandiseAdmin = () => {
   const [NatureMarchandiseLibelle, setLibelle] = React.useState("");
   const [TarifLibelle, setTarif] = React.useState("");
 
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
+
   async function deleteNature(index) {
     await axios
       .delete(variables.API_URL + "nature_marchandise/" + index)
@@ -233,7 +218,7 @@ const NatureMarchandiseAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -277,7 +262,7 @@ const NatureMarchandiseAdmin = () => {
       >
         <Grid item xs={5} marginTop={0}>
           <Button
-            variant="outlined"
+            variant="contained"
             size="small"
             startIcon={<InsertDriveFileIcon />}
             onClick={handlePrint}
@@ -347,7 +332,8 @@ const NatureMarchandiseAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification de la nature marchandise
@@ -377,17 +363,40 @@ const NatureMarchandiseAdmin = () => {
                       setEdLibelle(e.target.value);
                     }}
                   />
-                  <TextField
-                    sx={{ marginTop: 1.5 }}
-                    id="outlined-basic"
-                    label=" Tarif"
-                    variant="outlined"
-                    size="small"
-                    value={edtarif}
-                    onChange={(e) => {
-                      setEdTarif(e.target.value);
-                    }}
-                  />
+                  <Grid item xs={12}>
+                    <FormControl fullWidth sx={{ marginTop: 1 }}>
+                      <InputLabel id="demo-simple-select-label">
+                        Tarif
+                      </InputLabel>
+                      <Select
+                        defaultValue={edtarif}
+                        labelId="demo-simple-select-label"
+                        id="Tarif"
+                        value={edtarif}
+                        label="Tarif"
+                        size="small"
+                        InputLabelProps={{
+                          style: {
+                            fontSize: 14,
+                          },
+                        }}
+                        InputProps={{
+                          style: {
+                            fontSize: 14,
+                          },
+                        }}
+                        onChange={(event) => {
+                          setEdTarif(event.target.value);
+                        }}
+                      >
+                        {tarifs.map((tarif, index) => (
+                          <MenuItem key={index} value={tarif.TarifLibelle}>
+                            {tarif.TarifLibelle}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
                   <br />
                 </Box>
               </DialogContent>
@@ -400,7 +409,7 @@ const NatureMarchandiseAdmin = () => {
                 >
                   Valider
                 </Button>
-                <Button autoFocus onClick={handleCloseEdit}>
+                <Button autoFocus color="error" onClick={handleCloseEdit}>
                   Annuler
                 </Button>
               </DialogActions>
@@ -412,7 +421,8 @@ const NatureMarchandiseAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'une nature marchandise
@@ -481,14 +491,43 @@ const NatureMarchandiseAdmin = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
                 <Button autoFocus onClick={addNature}>
                   Ajouter
                 </Button>
+                <Button autoFocus color="error" onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer la nature de la marchandise
+                  avec l'identifiant {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteNature(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

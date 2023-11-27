@@ -1,11 +1,12 @@
 import React from "react";
 
-import { Box, Container, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
+import { Box, Container } from "@mui/system";
 
 import { destinations } from "../data";
 import DestinationItem from "./DestinationItem";
 
-const Destionations = () => {
+const Destinations = () => {
   return (
     <Container
       disableGutters
@@ -14,26 +15,11 @@ const Destionations = () => {
         px: {
           xs: 2,
           sm: 5,
-          md: 10,
+          md: 12,
         },
         my: 4,
       }}
     >
-      <Typography
-        sx={{
-          fontFamily: "Poppins",
-          fontWeight: "600",
-          fontSize: "32px",
-          color: "#161414",
-          mb: 8,
-          textAlign: {
-            xs: "center",
-            md: "left",
-          },
-        }}
-      >
-        Envoi de fret vers votre destination
-      </Typography>
       <Box
         sx={{
           display: "flex",
@@ -41,23 +27,51 @@ const Destionations = () => {
             xs: "column",
             md: "row",
           },
-          gap: {
-            xs: 4,
-            md: 1,
-          },
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 4,
+          gap: 2,
+        }}
+      >
+        <Typography
+          sx={{
+            fontFamily: "Poppins",
+            fontWeight: "600",
+            fontSize: "26px",
+            color: "#161414",
+            textAlign: {
+              xs: "center",
+              md: "left",
+            },
+          }}
+        >
+          Envoyez fret vers votre destination
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          gap: 4,
           justifyContent: "space-between",
           alignItems: {
             xs: "center",
             md: "flex-start",
           },
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
         }}
       >
-        {destinations.map((destination) => (
+        {destinations.map((item) => (
           <DestinationItem
-            key={destination.id}
-            name={destination.name}
-            location={destination.location}
-            image={destination.image}
+            key={item.id}
+            name={item.name}
+            location={item.location}
+            image={item.image}
+            ratingImage={item.ratingImage}
+            route={item.route}
           />
         ))}
       </Box>
@@ -65,4 +79,4 @@ const Destionations = () => {
   );
 };
 
-export default Destionations;
+export default Destinations;

@@ -1,41 +1,18 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { variables } from "../Variables";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
 import Container from "@mui/material/Container";
-import { Box, Drawer, Typography, IconButton } from "@mui/material";
-import girl from "../static/images/girl.jpg";
+import { Box, Drawer, Typography } from "@mui/material";
 import Link from "@mui/material/Link";
 import { navItems } from "../data";
 import MenuIcon from "@mui/icons-material/Menu";
 import Close from "@mui/icons-material/Close";
 import logoIsalosys from "../static/images/logoIsalosys.png";
 import ProfilUser from "./ProfilUser";
-import ClientProfile from "../views/ClientFiles/ClientProfile";
 import { grey } from "@mui/material/colors";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
 const InNav = () => {
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
-  const [redirect, setRedirect] = useState(false);
-  const navigate = useNavigate();
-
-  async function Deconnecter(event) {
-    event.preventDefault();
-
-    await fetch(variables.API_URL + "client/logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
-    setRedirect(true);
-  }
-
-  if (redirect) {
-    return navigate("/");
-  }
 
   return (
     <AppBar position="fixed" elevation={0} color="inherit">
@@ -155,8 +132,9 @@ const InNav = () => {
                 alignItems: "center",
                 gap: "8px",
               }}
+              color="#fff"
             >
-              <ProfilUser />
+              <ProfilUser color="#fff" />
               <Close onClick={() => setOpenMobileMenu(false)} />
             </Box>
             <Box

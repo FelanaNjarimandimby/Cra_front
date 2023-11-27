@@ -3,7 +3,6 @@ import React from "react";
 import { Box, Container } from "@mui/material";
 
 import { searchNavItems } from "../data";
-import MainButton from "./MainButton";
 import SearchNavItem from "./SearchNavItem";
 
 const SearchNav = () => {
@@ -51,7 +50,6 @@ const SearchNav = () => {
             iconImg={item.icon}
           />
         ))}
-        
       </Box>
     </Container>
   );

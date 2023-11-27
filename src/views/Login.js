@@ -209,13 +209,7 @@ const Login = () => {
                     },
                   }}
                 />
-                <FormControlLabel
-                  control={<Checkbox value="remember" color="primary" />}
-                  label="Se souvenir de moi"
-                  sx={{
-                    display: "flex",
-                  }}
-                />
+
                 <Button
                   size="small"
                   type="submit"

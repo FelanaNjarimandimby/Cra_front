@@ -13,7 +13,6 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
@@ -51,6 +50,18 @@ const MarchandiseAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -139,7 +150,9 @@ const MarchandiseAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -147,34 +160,6 @@ const MarchandiseAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteMarchandise(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -223,11 +208,17 @@ const MarchandiseAdmin = () => {
     (async () => await ListNatures())();
   }, []);
 
+  const [id, setIDMarchandise] = useState("");
   const [MarchandiseDesignation, setDesignation] = useState("");
   const [MarchandiseNombre, setNombre] = useState("");
   const [MarchandisePoids, setPoids] = useState("");
   const [MarchandiseVolume, setVolume] = useState("");
   const [NatureMarchandiseLibelle, setLibelle] = useState("");
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteMarchandise(index) {
     await axios
@@ -257,7 +248,7 @@ const MarchandiseAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -390,7 +381,8 @@ const MarchandiseAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification de la marchandise
@@ -461,7 +453,7 @@ const MarchandiseAdmin = () => {
                       <Select
                         defaultValue={ednature}
                         labelId="demo-simple-select-label"
-                        id="ItineraireDepart"
+                        id="ednature"
                         value={ednature}
                         label="Nature"
                         size="small"
@@ -514,7 +506,8 @@ const MarchandiseAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'une marchandise
@@ -626,6 +619,35 @@ const MarchandiseAdmin = () => {
                 </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer la marchandise avec
+                  l'identifiant {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteMarchandise(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>
