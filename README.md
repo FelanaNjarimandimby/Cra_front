@@ -2,7 +2,7 @@
 
 C'est un projet fait pour gérer les processus de gestion CARGO .
 
-## Dependance à installer
+## Dependances à installer
 
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
@@ -58,7 +58,7 @@ Ouvrir [http://localhost:3000](http://localhost:3000) pour le lancer dans le nav
 SGBD: PostgreSQL
 Nom de la base de données: DBReservation
 
-Voici le packages à installer
+Voici les packages à installer
 
 automapper\12.0.1\
 automapper.extensions.microsoft.dependencyinjection\12.0.1\
