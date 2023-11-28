@@ -20,7 +20,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-
+import { ToastContainer, toast } from "react-toastify";
 import Modal from "@mui/material/Modal";
 import axios from "axios";
 
@@ -48,6 +48,40 @@ export default function ProfilUser() {
     setAnchorEl(null);
   };
 
+  const notifyInfo = () =>
+    toast.error("Pas d'utilisateur connecté", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  const notifyDanger = () => {
+    toast.error("Une erreur est survenue !", {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+  const notifyEdit = () =>
+    toast.success("Modification avec succès!", {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
   //Dialog
   const [Open, setOpen] = React.useState(false);
   const theme = useTheme();
@@ -71,33 +105,25 @@ export default function ProfilUser() {
   const [ClientMotPasse, setMotPasse] = useState("");
 
   useEffect(() => {
-    (async () => {
+    VoirDetail();
+  }, []);
+
+  async function VoirDetail() {
+    try {
       const response = await fetch(variables.API_URL + "client/client", {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
       const content = await response.json();
-
+      setIdClient(content.id);
       setNomClient(content.ClientNom);
       setPrenomClient(content.ClientPrenom);
-    })();
-    (async () => await VoirDetail())();
-    //async ()=> await ListClients())();
-    //(async ()=> await FindClientByID(IDClient))();
-  }, []);
-
-  async function VoirDetail() {
-    const response = await fetch(variables.API_URL + "client/client", {
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-    const content = await response.json();
-    setIdClient(content.id);
-    setNomClient(content.ClientNom);
-    setPrenomClient(content.ClientPrenom);
-    setMail(content.ClientMail);
-    setAdresse(content.ClientAdresse);
-    setContact(content.ClientContact);
+      setMail(content.ClientMail);
+      setAdresse(content.ClientAdresse);
+      setContact(content.ClientContact);
+    } catch (error) {
+      notifyInfo();
+    }
   }
 
   async function EditClient(client) {
@@ -124,7 +150,7 @@ export default function ProfilUser() {
         ClientContact: ClientContact,
         ClientMotPasse: ClientMotPasse,
       });
-      alert("Modification de client avec succès");
+      notifyEdit();
       setIdClient("");
       setNomClient("");
       setPrenomClient("");
@@ -134,7 +160,7 @@ export default function ProfilUser() {
       handleCloseChild();
       VoirDetail();
     } catch (error) {
-      alert(error);
+      notifyDanger();
     }
   }
 
@@ -186,7 +212,7 @@ export default function ProfilUser() {
             opacity: "0.5",
           }}
         >
-          {ClientNom ? ClientNom : "You are not logged in"}
+          {ClientNom ? ClientNom : "Vous n'êtes pas connecté"}
         </Typography>
         <Typography
           sx={{
@@ -199,7 +225,18 @@ export default function ProfilUser() {
           {ClientPrenom ? ClientPrenom : ""}
         </Typography>
       </Box>
-
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
         <Tooltip title="Votre compte">
           <IconButton
@@ -210,7 +247,9 @@ export default function ProfilUser() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 56, height: 56 }}>M</Avatar>
+            <Avatar sx={{ width: 52, height: 52 }}>
+              {ClientNom ? ClientNom[0].toUpperCase() : ""}
+            </Avatar>
           </IconButton>
         </Tooltip>
       </Box>
@@ -278,63 +317,166 @@ export default function ProfilUser() {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button autoFocus onClick={Deconnecter}>
+            <Button autoFocus onClick={Deconnecter} variant="outlined">
               Continuer
             </Button>
-            <Button onClick={handleClickClose} autoFocus>
+            <Button onClick={handleClickClose} autoFocus color="error">
               Annuler
             </Button>
           </DialogActions>
         </Dialog>
       </div>
 
-      <div>
-        <Modal
-          open={openProfile}
-          onClose={handleProfileClose}
-          aria-labelledby="parent-modal-title"
-          aria-describedby="parent-modal-description"
+      <Dialog
+        open={openProfile}
+        onClose={handleProfileClose}
+        aria-labelledby="parent-modal-title"
+        aria-describedby="parent-modal-description"
+      >
+        <DialogTitle
+          id="alert-dialog-title"
+          sx={{
+            margin: "auto",
+          }}
         >
-          <Box
+          <Avatar
             sx={{
-              ...style,
-              width: 300,
-              display: "flex",
-              alignItems: "center",
-              flexDirection: "column",
-              gap: "8px",
+              width: 52,
+              height: 52,
+              margin: "auto",
             }}
           >
-            <Avatar sx={{ width: 56, height: 56 }} />
-            <h2>
-              {ClientNom
-                ? "Bienvenu" + " " + ClientNom
-                : "You are not logged in"}
-            </h2>
-            <h5 id="parent-modal-title">A propos de vous</h5>
+            {ClientNom ? ClientNom[0].toUpperCase() : ""}
+          </Avatar>
+
+          {ClientNom
+            ? "Bienvenue" + " " + ClientNom
+            : "Vous n'êtes pas connecté"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
             <p id="parent-modal-description"></p>
-
-            <p>Nom:{ClientNom}</p>
-            <p>Prénom:{ClientPrenom}</p>
-            <p>Mail:{ClientMail}</p>
-            <p>Adresse:{ClientAdresse}</p>
-            <p>Contact:{ClientContact}</p>
-
-            <box
+            <Typography
+              display="flex"
+              alignItems="center"
               sx={{
-                ...style,
-                width: 400,
-                display: "flex",
-                alignItems: "left",
-                gap: "8px",
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
               }}
             >
-              <Button onClick={handleOpenChild}>Modifier</Button>
-              <Button onClick={handleProfileClose}>Retour</Button>
-            </box>
-          </Box>
-        </Modal>
-      </div>
+              Nom :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {ClientNom}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Prénom :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {ClientPrenom}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Mail :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {ClientMail}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Adresse :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {ClientAdresse}
+              </Typography>
+            </Typography>
+            <Typography
+              display="flex"
+              alignItems="center"
+              sx={{
+                fontWeight: "600",
+                fontSize: "14px",
+                lineHeight: "21px",
+                color: "#000",
+              }}
+            >
+              Contact :
+              <Typography
+                sx={{
+                  fontWeight: "200",
+                  fontSize: "14px",
+                  lineHeight: "21px",
+                  color: "#000",
+                }}
+              >
+                {ClientContact}
+              </Typography>
+            </Typography>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleOpenChild} variant="outlined">
+            Modifier
+          </Button>
+          <Button onClick={handleProfileClose} autoFocus color="error">
+            Fermer
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Modal
         open={openChild}
@@ -455,7 +597,9 @@ export default function ProfilUser() {
               }}
             >
               <Button onClick={() => UpdateClient(id)}>Valider</Button>
-              <Button onClick={handleCloseChild}>Ok</Button>
+              <Button onClick={handleCloseChild} color="error">
+                Annuler
+              </Button>
             </box>
           </Box>
         </Box>

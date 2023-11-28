@@ -2,14 +2,10 @@ import * as React from "react";
 import { Box, Grid, TextField } from "@mui/material";
 import Modal from "@mui/material/Modal";
 import Button from "@mui/material/Button";
-import TextForm from "../TextForm";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { variables } from "../../Variables";
 import Avatar from "@mui/material/Avatar";
-
-import Dialog from "@mui/material/Dialog";
-import { useTheme } from "@mui/material/styles";
 
 const style = {
   position: "absolute",

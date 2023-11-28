@@ -1,4 +1,4 @@
-import { Box, Grid, Pagination, TextField } from "@mui/material";
+import { Box, Grid, TextField } from "@mui/material";
 import React from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -13,7 +13,6 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
@@ -46,6 +45,18 @@ const CoutFretAdmin = () => {
     });
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
+  const notifyInsertDanger = () => {
+    toast.error("Veuillez vérifier les informations saisies !", {
       position: "bottom-center",
       autoClose: 3000,
       hideProgressBar: false,
@@ -90,10 +101,10 @@ const CoutFretAdmin = () => {
   const [rows, setRows] = React.useState([]);
   const column = [
     { field: "id", headerName: "ID", width: 5 },
-    { field: "CoutPoidsMin", headerName: "Poids Minimal", width: 150 },
-    { field: "CoutPoidsMax", headerName: "Poids Maximal", width: 150 },
-    { field: "Cout", headerName: "Cout", width: 200 },
-    { field: "AgentID", headerName: "Agent", width: 120 },
+    { field: "CoutPoidsMin", headerName: "Poids Minimal(en Kg)", width: 200 },
+    { field: "CoutPoidsMax", headerName: "Poids Maximal(en Kg)", width: 200 },
+    { field: "Cout", headerName: "Cout(en Ar)", width: 200 },
+    { field: "AgentNom", headerName: "Agent", width: 300 },
 
     {
       field: "action",
@@ -108,7 +119,7 @@ const CoutFretAdmin = () => {
                 params.row.CoutPoidsMin,
                 params.row.CoutPoidsMax,
                 params.row.Cout,
-                params.row.AgentID
+                params.row.AgentNom
               );
             }}
             type="button"
@@ -119,7 +130,9 @@ const CoutFretAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -127,34 +140,6 @@ const CoutFretAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteCout(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -194,6 +179,7 @@ const CoutFretAdmin = () => {
   }
 
   React.useEffect(() => {
+    (async () => await GetCurrentAgent())();
     (async () => await ListCouts())();
   }, []);
 
@@ -201,6 +187,21 @@ const CoutFretAdmin = () => {
   const [CoutPoidsMax, setPoidsMax] = React.useState("");
   const [Cout, setCout] = React.useState("");
   const [AgentID, setAgent] = React.useState("");
+  const [AgentNom, setAgentNom] = React.useState("");
+
+  async function GetCurrentAgent() {
+    const response = await fetch(variables.API_URL + "agent/agent", {
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    const content = await response.json();
+    setAgent(content.id);
+  }
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteCout(index) {
     await axios
@@ -229,13 +230,15 @@ const CoutFretAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyInsertDanger();
+      empty();
     }
   }
 
   const empty = () => {
     setPoidsMin("");
     setPoidsMax("");
+    setCout("");
   };
 
   const [edId, setEdId] = React.useState("");
@@ -298,6 +301,33 @@ const CoutFretAdmin = () => {
         <Grid item xs={4}></Grid>
       </Grid>
 
+      <Dialog
+        fullScreen={fullScreen}
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="responsive-dialog-title"
+      >
+        <DialogTitle id="responsive-dialog-title">{"Confirmation"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Voulez vous vraiment supprimer cette information?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              deleteCout(rows.id);
+            }}
+            autoFocus
+          >
+            Supprimer
+          </Button>
+          <Button autoFocus onClick={handleClose} color="error">
+            Annuler
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <div className="App wrapper">
         <Box sx={{ display: "flex", alignItems: "left" }}>
           <Box
@@ -350,7 +380,8 @@ const CoutFretAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification du cout de fret
@@ -372,7 +403,7 @@ const CoutFretAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label="Poids Min"
+                    label="Poids Min(en Kg)"
                     variant="outlined"
                     size="small"
                     value={edpoidsmin}
@@ -383,7 +414,7 @@ const CoutFretAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label=" Poids Max"
+                    label=" Poids Max(en Kg)"
                     variant="outlined"
                     size="small"
                     value={edpoidsmax}
@@ -394,7 +425,7 @@ const CoutFretAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label=" Cout"
+                    label=" Cout(en Ar)"
                     variant="outlined"
                     size="small"
                     value={edcout}
@@ -426,7 +457,8 @@ const CoutFretAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'un cout de fret
@@ -448,7 +480,7 @@ const CoutFretAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label="Poids Min"
+                    label="Poids Min(en Kg)"
                     variant="outlined"
                     size="small"
                     value={CoutPoidsMin}
@@ -458,7 +490,7 @@ const CoutFretAdmin = () => {
                   />
                   <TextField
                     id="outlined-basic"
-                    label="Poids Max"
+                    label="Poids Max(en Kg)"
                     variant="outlined"
                     sx={{ marginTop: 1.5 }}
                     size="small"
@@ -469,7 +501,7 @@ const CoutFretAdmin = () => {
                   />
                   <TextField
                     id="outlined-basic"
-                    label="Cout"
+                    label="Cout(en Ar)"
                     variant="outlined"
                     sx={{ marginTop: 1.5 }}
                     size="small"
@@ -479,6 +511,7 @@ const CoutFretAdmin = () => {
                     }}
                   />
                   <TextField
+                    hidden
                     id="outlined-basic"
                     label="AgentID"
                     variant="outlined"
@@ -493,14 +526,43 @@ const CoutFretAdmin = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
                 <Button autoFocus onClick={addCout}>
                   Ajouter
                 </Button>
+                <Button autoFocus onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer le cout de fret avec
+                  l'identifiant {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteCout(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

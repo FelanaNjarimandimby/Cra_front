@@ -1,15 +1,5 @@
-import {
-  Box,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, FormControl, Grid, TextField } from "@mui/material";
 import React from "react";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { PersonRemove, PersonAdd } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
@@ -23,8 +13,6 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import AddIcon from "@mui/icons-material/Add";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -34,8 +22,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
-import MiniDrawer from "../../views/MiniDrawer";
-import Fab from "@mui/material/Fab";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { useReactToPrint } from "react-to-print";
 
@@ -52,7 +38,7 @@ const AgentAdmin = () => {
   const notify = () =>
     toast.success("Insertion avec succès!", {
       position: "bottom-center",
-      autoClose: 3000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -63,7 +49,7 @@ const AgentAdmin = () => {
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
-      autoClose: 3000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -75,7 +61,7 @@ const AgentAdmin = () => {
   const notifyDelete = () =>
     toast.success("Suppression avec succès!", {
       position: "bottom-center",
-      autoClose: 3000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -86,7 +72,7 @@ const AgentAdmin = () => {
   const notifyEdit = () =>
     toast.success("Modification avec succès!", {
       position: "bottom-center",
-      autoClose: 3000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -107,12 +93,12 @@ const AgentAdmin = () => {
   const column = [
     { field: "id", headerName: "ID", width: 5 },
     { field: "AgentNom", headerName: "Nom", width: 170 },
-    { field: "AgentPrenom", headerName: "Prénom", width: 170 },
+    { field: "AgentPrenom", headerName: "Prénom", width: 140 },
     { field: "AgentGenre", headerName: "Genre", width: 90 },
     { field: "AgentMail", headerName: "Email", width: 170 },
     { field: "AgentAdresse", headerName: "Adresse", width: 170 },
-    { field: "AgentContact", headerName: "Contact", width: 150 },
-    { field: "AgentFonction", headerName: "Fonction", width: 100 },
+    { field: "AgentContact", headerName: "Contact", width: 110 },
+    { field: "AgentFonction", headerName: "Fonction", width: 170 },
 
     {
       field: "action",
@@ -141,7 +127,9 @@ const AgentAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -149,34 +137,6 @@ const AgentAdmin = () => {
           >
             <PersonRemove />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteAgent(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -226,6 +186,11 @@ const AgentAdmin = () => {
   const [AgentContact, setContact] = React.useState("");
   const [AgentMotPasse, setMdp] = React.useState("");
   const [AgentFonction, setFonction] = React.useState("");
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteAgent(index) {
     await axios
@@ -402,10 +367,11 @@ const AgentAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
-                Modification du client
+                Modification de l'agent
               </DialogTitle>
               <IconButton
                 aria-label="close"
@@ -442,17 +408,41 @@ const AgentAdmin = () => {
                       setEdPrenom(e.target.value);
                     }}
                   />
-                  <TextField
+                  <FormControl
                     sx={{ marginTop: 1.5 }}
-                    id="outlined-basic"
-                    label="Genre"
-                    variant="outlined"
-                    size="small"
                     value={edgenre}
                     onChange={(e) => {
                       setEdGenre(e.target.value);
                     }}
-                  />
+                  >
+                    <FormLabel id="demo-row-radio-buttons-group-label">
+                      Genre
+                    </FormLabel>
+                    <RadioGroup
+                      row
+                      aria-labelledby="demo-row-radio-buttons-group-label"
+                      name="row-radio-buttons-group"
+                    >
+                      <FormControlLabel
+                        value="Masculin"
+                        control={
+                          <Radio
+                            size="small"
+                            checked={edgenre === "Masculin"}
+                          />
+                        }
+                        label="Masculin"
+                      />
+                      <FormControlLabel
+                        value="Féminin"
+                        control={
+                          <Radio size="small" checked={edgenre === "Féminin"} />
+                        }
+                        label="Féminin"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+
                   <TextField
                     id="outlined-basic"
                     label="Email"
@@ -510,7 +500,7 @@ const AgentAdmin = () => {
                 >
                   Valider
                 </Button>
-                <Button autoFocus onClick={handleCloseEdit}>
+                <Button autoFocus onClick={handleCloseEdit} color="error">
                   Annuler
                 </Button>
               </DialogActions>
@@ -522,7 +512,8 @@ const AgentAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'un agent
@@ -562,17 +553,33 @@ const AgentAdmin = () => {
                       setPrenom(e.target.value);
                     }}
                   />
-                  <TextField
+                  <FormControl
                     sx={{ marginTop: 1.5 }}
-                    id="outlined-basic"
-                    label="Genre"
-                    variant="outlined"
-                    size="small"
                     value={AgentGenre}
                     onChange={(e) => {
                       setGenre(e.target.value);
                     }}
-                  />
+                  >
+                    <FormLabel id="demo-row-radio-buttons-group-label">
+                      Genre
+                    </FormLabel>
+                    <RadioGroup
+                      row
+                      aria-labelledby="demo-row-radio-buttons-group-label"
+                      name="row-radio-buttons-group"
+                    >
+                      <FormControlLabel
+                        value="Masculin"
+                        control={<Radio size="small" />}
+                        label="Masculin"
+                      />
+                      <FormControlLabel
+                        value="Féminin"
+                        control={<Radio size="small" />}
+                        label="Féminin"
+                      />
+                    </RadioGroup>
+                  </FormControl>
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
@@ -625,11 +632,40 @@ const AgentAdmin = () => {
                 <Button autoFocus onClick={addAgent}>
                   Ajouter
                 </Button>
-                <Button autoFocus onClick={handleCloseAdd}>
+                <Button autoFocus onClick={handleCloseAdd} color="error">
                   Annuler
                 </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer l'agent avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteAgent(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

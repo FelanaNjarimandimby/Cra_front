@@ -29,9 +29,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
-import MiniDrawer from "../../views/MiniDrawer";
-import dateFormat from "dateformat";
-import { FormHelperText } from "@mui/material";
 import dayjs from "dayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -40,6 +37,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useReactToPrint } from "react-to-print";
 import { useNavigate } from "react-router-dom";
 import FileDownload from "@mui/icons-material/FileDownload";
+import { useState } from "react";
+import { ArrowRight } from "@mui/icons-material";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -62,6 +61,18 @@ const VenteAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -78,6 +89,17 @@ const VenteAdmin = () => {
     toast.success("Suppression avec succès!", {
       position: "bottom-center",
       autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  const notifyConfirmation = () =>
+    toast.success("Réservation enregistrée!", {
+      position: "bottom-center",
+      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -107,6 +129,18 @@ const VenteAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsertLTA = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
 
   const componentRef = React.useRef();
 
@@ -123,21 +157,21 @@ const VenteAdmin = () => {
       field: "VenteDate",
       headerName: "Date de la vente",
       valueFormatter: (params) => dayjs(params.value).format("DD/MM/YYYY"),
+      width: 200,
     },
     {
       field: "ReservationID",
-      width: 200,
       headerName: "Reférence réservation",
+      width: 200,
     },
     {
-      field: "AgentID",
-      width: 200,
+      field: "AgentNom",
       headerName: "Agent",
+      width: 300,
     },
-
     {
       field: "action",
-      width: 109,
+      width: 250,
       headerName: "Action",
 
       renderCell: (params) => (
@@ -159,7 +193,9 @@ const VenteAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -167,34 +203,15 @@ const VenteAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
+          <IconButton
+            onClick={() => {
+              ToggleLTA(params.row.id);
+            }}
+            type="button"
+            size="small"
           >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteVente(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
+            <Typography>LTA</Typography>
+          </IconButton>
         </>
       ),
     },
@@ -226,20 +243,56 @@ const VenteAdmin = () => {
     setOpenAdd(false);
   };
 
+  const [openLTA, setOpenLTA] = useState(false);
+
+  const handleClickOpenLTA = () => {
+    setOpenLTA(true);
+  };
+  const handleCloseLTA = () => {
+    setOpenLTA(false);
+  };
+
   async function ListVentes() {
     axios
       .get(variables.API_URL + "vente")
       .then((response) => setRows(response.data))
       .catch((err) => notifyInfo());
   }
+
+  async function ListAgents() {
+    axios
+      .get(variables.API_URL + "agent")
+      .then((res) => setAgent(res.data))
+      .catch((err) => console.log(err));
+  }
+
+  async function ListReservations() {
+    axios
+      .get(variables.API_URL + "reservation/reservation")
+      .then((res) => setReservation(res.data))
+      .catch((err) => console.log(err));
+  }
+
   React.useEffect(() => {
     (async () => await ListVentes())();
+    (async () => await ListReservations())();
+    (async () => await ListAgents())();
   }, []);
 
+  const [reservations, setReservation] = React.useState([]);
+  const [agents, setAgent] = React.useState([]);
   const [VenteID, setIDVente] = React.useState("");
   const [VenteDate, setDate] = React.useState(dayjs(new Date()));
   const [ReservationID, setIDReservation] = React.useState("");
   const [AgentID, setIDAgent] = React.useState("");
+
+  const [LTANumero, setNumero] = React.useState("");
+  const [LTADateEmission, setEmissionDate] = React.useState(dayjs(new Date()));
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteVente(index) {
     await axios
@@ -252,6 +305,29 @@ const VenteAdmin = () => {
       .catch((error) => {
         notifyDanger();
       });
+  }
+
+  //Ajouter une LTA
+
+  const ToggleLTA = (ident) => {
+    setIDVente(ident);
+    handleClickOpenLTA();
+  };
+
+  async function addLta(event) {
+    event.preventDefault();
+    try {
+      await axios.post(variables.API_URL + "lta", {
+        LTANumero,
+        LTADateEmission,
+        VenteID,
+      });
+      handleCloseLTA();
+      empty();
+      notifyConfirmation();
+    } catch (error) {
+      notifyDangerInsertLTA();
+    }
   }
 
   async function addVente(event) {
@@ -267,7 +343,7 @@ const VenteAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -301,67 +377,88 @@ const VenteAdmin = () => {
       })
       .catch((error) => {
         notifyDanger();
-        console.log(error);
       });
   }
   const navigate = useNavigate("");
 
   const navigatetoLTA = () => {
-    navigate("/ltaAdmin");
+    navigate("/ltas");
   };
   return (
     <>
-      <Grid
+      <Box
         sx={{
-          py: 3,
-          px: 4,
           display: "flex",
-          alignItems: "right",
-          gap: "5px",
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 4,
+          gap: 2,
         }}
       >
-        <Grid item xs={5} marginTop={0}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownload />}
-            onClick={handlePrint}
-          >
-            Exporter en pdf
-          </Button>
-        </Grid>
-        <Grid xs={2} item marginTop={0}>
-          <Button
-            onClick={handleClickOpenAdd}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Ajouter
-          </Button>
-        </Grid>
         <Grid
-          item
-          xs={4}
           sx={{
+            py: 3,
+            px: 4,
             display: "flex",
-            flexDirection: {
-              xs: "column",
-              md: "row",
-            },
-            flex: 1,
+            alignItems: "right",
+            gap: "5px",
           }}
         >
-          <Button
-            onClick={navigatetoLTA}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Ajouter LTA
-          </Button>
+          <Grid item xs={5} marginTop={0}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<FileDownload />}
+              onClick={handlePrint}
+            >
+              Exporter en pdf
+            </Button>
+          </Grid>
+          <Grid xs={2} item marginTop={0}>
+            <Button
+              onClick={handleClickOpenAdd}
+              variant="outlined"
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              Ajouter
+            </Button>
+          </Grid>
+          <Grid item xs={4}></Grid>
         </Grid>
-      </Grid>
+        <Button
+          variant="contained"
+          sx={{
+            width: {
+              xs: "100%",
+              md: "auto",
+            },
+            backgroundColor: "#F6F4FF",
+            textTransform: "none",
+            p: 1.25,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            borderRadius: "12px",
+            fontFamily: "inherit",
+            fontSize: "14px",
+            fontWeight: "400",
+            color: "#5243C2",
+            "&.MuiButtonBase-root:hover": {
+              backgroundColor: "#F6F4FF",
+            },
+          }}
+          endIcon={<ArrowRight />}
+          onClick={navigatetoLTA}
+        >
+          Voir LTA
+        </Button>
+      </Box>
 
       <div className="App wrapper">
         <Box sx={{ display: "flex", alignItems: "left" }}>
@@ -412,7 +509,8 @@ const VenteAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification de la vente
@@ -442,6 +540,7 @@ const VenteAdmin = () => {
                         renderInput={(params) => (
                           <TextField {...params} sx={{ width: "100%" }} />
                         )}
+                        sx={{ width: 500 }}
                       />
                     </DemoContainer>
                   </LocalizationProvider>
@@ -470,7 +569,8 @@ const VenteAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'une vente
@@ -501,43 +601,195 @@ const VenteAdmin = () => {
                           renderInput={(params) => (
                             <TextField {...params} sx={{ width: "100%" }} />
                           )}
-                          sx={{ marginTop: 1.5 }}
+                          sx={{ marginTop: 1.5, width: 500 }}
                         />
                       </DemoContainer>
                     </LocalizationProvider>
                   </div>
+                  <Grid></Grid>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth sx={{ marginTop: 2, width: 500 }}>
+                      <InputLabel id="demo-simple-select-label">
+                        Reservation
+                      </InputLabel>
+                      <Select
+                        defaultValue={"ReservationID"}
+                        labelId="demo-simple-select-label"
+                        id="ReservationID"
+                        value={ReservationID}
+                        label="Reservation"
+                        size="small"
+                        InputLabelProps={{
+                          style: {
+                            fontSize: 14,
+                          },
+                        }}
+                        InputProps={{
+                          style: {
+                            fontSize: 14,
+                          },
+                        }}
+                        onChange={(event) => {
+                          setIDReservation(event.target.value);
+                        }}
+                      >
+                        {reservations.map((reservation, index) => (
+                          <MenuItem key={index} value={reservation.id}>
+                            {reservation.id} - {reservation.Designation}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth sx={{ marginTop: 2, width: 500 }}>
+                      <InputLabel id="demo-simple-select-label">
+                        Agent
+                      </InputLabel>
+                      <Select
+                        defaultValue={"AgentID"}
+                        labelId="demo-simple-select-label"
+                        id="AgentID"
+                        value={AgentID}
+                        label="Reservation"
+                        size="small"
+                        InputLabelProps={{
+                          style: {
+                            fontSize: 14,
+                          },
+                        }}
+                        InputProps={{
+                          style: {
+                            fontSize: 14,
+                          },
+                        }}
+                        onChange={(event) => {
+                          setIDAgent(event.target.value);
+                        }}
+                      >
+                        {agents.map((agent, index) => (
+                          <MenuItem key={index} value={agent.id}>
+                            {agent.id} - {agent.AgentNom}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <br />
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button autoFocus onClick={addVente}>
+                  Ajouter
+                </Button>
+                <Button autoFocus color="error" onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
+              </DialogActions>
+            </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer la vente avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteVente(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <BootstrapDialog
+              onClose={handleCloseLTA}
+              aria-labelledby="customized-dialog-title"
+              open={openLTA}
+            >
+              <DialogTitle
+                align="center"
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
+                id="customized-dialog-title"
+              >
+                Ajouter une LTA à cette vente
+              </DialogTitle>
+              <IconButton
+                aria-label="close"
+                onClick={handleCloseLTA}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 8,
+                  color: (theme) => theme.palette.grey[500],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <DialogContent dividers>
+                <Box display="flex" flexDirection="column" width={500}>
+                  <TextField
+                    id="outlined-basic"
+                    label="Numéro LTA"
+                    variant="outlined"
+                    sx={{ marginTop: 1.5 }}
+                    size="small"
+                    value={LTANumero}
+                    onChange={(e) => {
+                      setNumero(e.target.value);
+                    }}
+                  />
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DemoContainer components={["DatePicker"]}>
+                      <DatePicker
+                        sx={{ marginTop: 1.5, width: 500 }}
+                        defaultValue={dayjs(new Date())}
+                        label="Date de départ"
+                        format="DD/MM/YYYY"
+                        value={dayjs(LTADateEmission)}
+                        onChange={(date) => setEmissionDate(date)}
+                        renderInput={(params) => (
+                          <TextField {...params} sx={{ width: "100%" }} />
+                        )}
+                      />
+                    </DemoContainer>
+                  </LocalizationProvider>
 
                   <TextField
                     id="outlined-basic"
-                    label="ReservationID"
+                    label="VenteID"
                     variant="outlined"
                     sx={{ marginTop: 1.5 }}
                     size="small"
-                    value={ReservationID}
+                    value={VenteID}
                     onChange={(e) => {
-                      setIDReservation(e.target.value);
-                    }}
-                  />
-                  <TextField
-                    id="outlined-basic"
-                    label="AgentID"
-                    variant="outlined"
-                    sx={{ marginTop: 1.5 }}
-                    size="small"
-                    value={AgentID}
-                    onChange={(e) => {
-                      setIDAgent(e.target.value);
+                      setIDVente(e.target.value);
                     }}
                   />
                   <br />
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
-                <Button autoFocus onClick={addVente}>
+                <Button autoFocus onClick={addLta}>
                   Ajouter
+                </Button>
+                <Button autoFocus color="error" onClick={handleCloseLTA}>
+                  Annuler
                 </Button>
               </DialogActions>
             </BootstrapDialog>

@@ -1,50 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { variables } from "../../Variables";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
 import Container from "@mui/material/Container";
-import { Box, Drawer, Typography, IconButton } from "@mui/material";
+import { Box, Drawer, Typography } from "@mui/material";
 import Link from "@mui/material/Link";
 import { navItems } from "../../data";
-import MenuIcon from "@mui/icons-material/Menu";
 import Close from "@mui/icons-material/Close";
 import logoIsalosys from "../../static/images/logoIsalosys.png";
-import ProfilUser from "../ProfilUser";
 import ProfilAdmin from "./ProfileAdmin";
 import { grey } from "@mui/material/colors";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import MenuParametre from "../../views/Paramètres/MenuParametre";
-import styled from "styled-components";
-import { SidebarData } from "./SidebarData";
-import SubMenu from "./SubMenu";
-
-import EditIcon from "@mui/icons-material/Edit";
-import CloseIcon from "@mui/icons-material/Close";
 import Sidebar from "./Sidebar";
-import { FlightTakeoffOutlined } from "@mui/icons-material";
 import BadgeAdmin from "./BadgeAdmin";
 
 const NavAdmin = () => {
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
-  const [redirect, setRedirect] = useState(false);
-  const navigate = useNavigate();
-
-  async function Deconnecter(event) {
-    event.preventDefault();
-
-    await fetch(variables.API_URL + "client/logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-
-    setRedirect(true);
-  }
-
-  if (redirect) {
-    return navigate("/");
-  }
 
   return (
     <AppBar position="fixed" elevation={0} color="inherit">

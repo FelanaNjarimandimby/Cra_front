@@ -22,21 +22,16 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormLabel from "@mui/material/FormLabel";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
-import MiniDrawer from "../../views/MiniDrawer";
-import Fab from "@mui/material/Fab";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { useReactToPrint } from "react-to-print";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "@mui/icons-material";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -48,6 +43,12 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 const AeroportAdmin = () => {
+  const navigate = useNavigate("");
+
+  const navigateCompagnie = () => {
+    navigate("/compagnies");
+  };
+
   const notify = () =>
     toast.success("Insertion avec succès!", {
       position: "bottom-center",
@@ -59,6 +60,18 @@ const AeroportAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -109,7 +122,7 @@ const AeroportAdmin = () => {
     { field: "AeroportCodeOACI", headerName: "Code OACI", width: 150 },
     { field: "AeroportNom", headerName: "Aeroport", width: 150 },
     { field: "AeroportContact", headerName: "Contact", width: 150 },
-    { field: "AeroportLocalisation", headerName: "Localisation", width: 150 },
+    { field: "AeroportLocalisation", headerName: "Localisation", width: 250 },
     { field: "CompagnieID", headerName: "Compagnie", width: 150 },
 
     {
@@ -138,7 +151,9 @@ const AeroportAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -146,34 +161,6 @@ const AeroportAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteAeroport(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -205,16 +192,26 @@ const AeroportAdmin = () => {
     setOpenAdd(false);
   };
 
+  async function ListCompagnies() {
+    axios
+      .get(variables.API_URL + "compagnie")
+      .then((res) => setcompagnies(res.data))
+      .then((res) => console.log(res.data))
+      .catch((err) => console.log(err));
+  }
+
   async function ListAeroports() {
     axios
       .get(variables.API_URL + "aeroport")
       .then((res) => setRows(res.data))
-      .then((res) => console.log(res.data))
       .catch((err) => console.log(err));
   }
   React.useEffect(() => {
     (async () => await ListAeroports())();
+    (async () => await ListCompagnies())();
   }, []);
+
+  const [compagnies, setcompagnies] = React.useState([]);
 
   const [AeroportCodeIATA, setIATA] = React.useState("");
   const [AeroportCodeOACI, setOACI] = React.useState("");
@@ -222,6 +219,11 @@ const AeroportAdmin = () => {
   const [AeroportContact, setContact] = React.useState("");
   const [AeroportLocalisation, setLocalisation] = React.useState("");
   const [CompagnieID, setCompagnie] = React.useState("");
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteAeroport(index) {
     await axios
@@ -252,7 +254,7 @@ const AeroportAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      notifyDanger();
+      notifyDangerInsert();
     }
   }
 
@@ -312,31 +314,79 @@ const AeroportAdmin = () => {
   }
   return (
     <>
-      <Grid
-        sx={{ py: 3, px: 4, display: "flex", alignItems: "right", gap: "5px" }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 4,
+          gap: 2,
+        }}
       >
-        <Grid item xs={5} marginTop={0}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownload />}
-            onClick={handlePrint}
-          >
-            Exporter en pdf
-          </Button>
+        <Grid
+          sx={{
+            py: 3,
+            px: 4,
+            display: "flex",
+            alignItems: "right",
+            gap: "5px",
+          }}
+        >
+          <Grid item xs={5} marginTop={0}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<FileDownload />}
+              onClick={handlePrint}
+            >
+              Exporter en pdf
+            </Button>
+          </Grid>
+          <Grid xs={2} item marginTop={0}>
+            <Button
+              onClick={handleClickOpenAdd}
+              variant="outlined"
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              Ajouter
+            </Button>
+          </Grid>
+          <Grid item xs={4}></Grid>
         </Grid>
-        <Grid xs={2} item marginTop={0}>
-          <Button
-            onClick={handleClickOpenAdd}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Ajouter
-          </Button>
-        </Grid>
-        <Grid item xs={4}></Grid>
-      </Grid>
+        <Button
+          variant="contained"
+          sx={{
+            width: {
+              xs: "100%",
+              md: "auto",
+            },
+            backgroundColor: "#F6F4FF",
+            textTransform: "none",
+            p: 1.25,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            borderRadius: "12px",
+            fontFamily: "inherit",
+            fontSize: "14px",
+            fontWeight: "400",
+            color: "#5243C2",
+            "&.MuiButtonBase-root:hover": {
+              backgroundColor: "#F6F4FF",
+            },
+          }}
+          endIcon={<ArrowRight />}
+          onClick={navigateCompagnie}
+        >
+          Les compagnies
+        </Button>
+      </Box>
 
       <div className="App wrapper">
         <Box sx={{ display: "flex", alignItems: "left" }}>
@@ -558,29 +608,79 @@ const AeroportAdmin = () => {
                       setLocalisation(e.target.value);
                     }}
                   />
-                  <TextField
-                    sx={{ marginTop: 1.5 }}
-                    id="outlined-basic"
-                    label="Compagnie"
-                    variant="outlined"
-                    size="small"
-                    value={CompagnieID}
-                    onChange={(e) => {
-                      setCompagnie(e.target.value);
-                    }}
-                  />
+                  <FormControl fullWidth sx={{ marginTop: 1 }}>
+                    <InputLabel id="demo-simple-select-label">
+                      Compagnie
+                    </InputLabel>
+                    <Select
+                      defaultValue={CompagnieID}
+                      labelId="demo-simple-select-label"
+                      id="ItineraireDepart"
+                      value={CompagnieID}
+                      label="CompagnieID "
+                      size="small"
+                      InputLabelProps={{
+                        style: {
+                          fontSize: 14,
+                        },
+                      }}
+                      InputProps={{
+                        style: {
+                          fontSize: 14,
+                        },
+                      }}
+                      onChange={(event) => {
+                        setCompagnie(event.target.value);
+                      }}
+                    >
+                      {compagnies.map((compagnie, index) => (
+                        <MenuItem key={index} value={compagnie.id}>
+                          {compagnie.id} - {compagnie.CompagnieNom}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                   <br />
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
                 <Button autoFocus onClick={addAeroport}>
                   Ajouter
                 </Button>
+                <Button autoFocus onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer l'aéroport avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteAeroport(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

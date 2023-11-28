@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-
 import { Box, Container, Typography, Paper } from "@mui/material";
 import axios from "axios";
 import { variables } from "../../Variables";
-import SecondaryButton from "../../components/SecondaryButton";
-
 import Button from "@mui/material/Button";
-
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -15,13 +11,7 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import {
-  InputLabel,
-  Select,
-  FormControl,
-  MenuItem,
-  FormHelperText,
-} from "@mui/material";
+import { InputLabel, Select, FormControl, MenuItem } from "@mui/material";
 import ChevronRight from "@material-ui/icons/ChevronRight";
 import { styled } from "@mui/material/styles";
 import TopNav from "../../components/TopNav";
@@ -160,9 +150,9 @@ const ReservationClient = () => {
       await axios
         .post(variables.API_URL + "Reservation/ClientReservation", {
           Designation,
-          MarchandiseNombre,
-          MarchandisePoids,
-          MarchandiseVolume,
+          NombreColis: MarchandiseNombre,
+          Poids: MarchandisePoids,
+          Volume: MarchandiseVolume,
           Nature,
           Tarif,
           NomDestinataire,
@@ -358,7 +348,7 @@ const ReservationClient = () => {
                                   required
                                   fullWidth
                                   name="poids"
-                                  label="Poids"
+                                  label="Poids(Kg)"
                                   type="number"
                                   id="poids"
                                   value={MarchandisePoids}
@@ -385,7 +375,7 @@ const ReservationClient = () => {
                                   required
                                   fullWidth
                                   name="volume"
-                                  label="Volume"
+                                  label="Volume(dm3)"
                                   type="number"
                                   id="volume"
                                   value={MarchandiseVolume}

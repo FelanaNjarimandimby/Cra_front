@@ -52,6 +52,18 @@ const TarifAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -98,10 +110,14 @@ const TarifAdmin = () => {
   const [rows, setRows] = React.useState([]);
   const column = [
     { field: "id", headerName: "ID", width: 5 },
-    { field: "TarifLibelle", headerName: "Libelle", width: 200 },
-    { field: "TarifValeur", headerName: "Valeur", width: 120 },
-    { field: "TarifFraisAssurance", headerName: "Assurance", width: 120 },
-    { field: "TarifAnnexe", headerName: "Annexe", width: 120 },
+    { field: "TarifLibelle", headerName: "Libelle", width: 250 },
+    { field: "TarifValeur", headerName: "Valeur(en %)", width: 120 },
+    {
+      field: "TarifFraisAssurance",
+      headerName: "Assurance(en Ar)",
+      width: 200,
+    },
+    { field: "TarifAnnexe", headerName: "Annexe(en Ar)", width: 200 },
 
     {
       field: "action",
@@ -127,7 +143,9 @@ const TarifAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -135,34 +153,6 @@ const TarifAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteTarif(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -209,6 +199,11 @@ const TarifAdmin = () => {
   const [TarifFraisAssurance, setAssurance] = React.useState("");
   const [TarifAnnexe, setAnnexe] = React.useState("");
 
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
+
   async function deleteTarif(index) {
     await axios
       .delete(variables.API_URL + "typetarif/" + index)
@@ -236,7 +231,7 @@ const TarifAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -405,7 +400,8 @@ const TarifAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification du type tarif
@@ -438,7 +434,7 @@ const TarifAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label=" Valeur"
+                    label=" Valeur(en %)"
                     variant="outlined"
                     size="small"
                     value={edvaleur}
@@ -449,7 +445,7 @@ const TarifAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label=" Frais d'assurance"
+                    label=" Frais d'assurance(en Ar)"
                     variant="outlined"
                     size="small"
                     value={edassurance}
@@ -460,7 +456,7 @@ const TarifAdmin = () => {
                   <TextField
                     sx={{ marginTop: 1.5 }}
                     id="outlined-basic"
-                    label=" Frais annexe"
+                    label=" Frais annexe(en Ar)"
                     variant="outlined"
                     size="small"
                     value={edannexe}
@@ -492,7 +488,8 @@ const TarifAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'un tarif
@@ -524,7 +521,7 @@ const TarifAdmin = () => {
                   />
                   <TextField
                     id="outlined-basic"
-                    label="Valeur"
+                    label="Valeur(en %)"
                     variant="outlined"
                     sx={{ marginTop: 1.5 }}
                     size="small"
@@ -535,7 +532,7 @@ const TarifAdmin = () => {
                   />
                   <TextField
                     id="outlined-basic"
-                    label="Frais Assurance"
+                    label="Frais Assurance(en Ar)"
                     variant="outlined"
                     sx={{ marginTop: 1.5 }}
                     size="small"
@@ -546,7 +543,7 @@ const TarifAdmin = () => {
                   />
                   <TextField
                     id="outlined-basic"
-                    label="Tarif annexe"
+                    label="Tarif annexe(en Ar)"
                     variant="outlined"
                     sx={{ marginTop: 1.5 }}
                     size="small"
@@ -559,14 +556,43 @@ const TarifAdmin = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
                 <Button autoFocus onClick={addTarif}>
                   Ajouter
                 </Button>
+                <Button autoFocus onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer le tarif avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteTarif(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

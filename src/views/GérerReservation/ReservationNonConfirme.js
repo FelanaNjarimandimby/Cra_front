@@ -22,9 +22,6 @@ import DialogTitle from "@mui/material/DialogTitle";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
-import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,6 +38,8 @@ import Close from "@mui/icons-material/Close";
 import { useState } from "react";
 import Visibility from "@mui/icons-material/Visibility";
 import dateFormat from "dateformat";
+import { ArrowRight } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -59,7 +58,13 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-const ReservationAdmin = () => {
+const ReservationNonConfirme = () => {
+  const navigate = useNavigate("");
+
+  const navigateNotification = () => {
+    navigate("/confirmation");
+  };
+
   const notify = () =>
     toast.success("Insertion avec succès!", {
       position: "bottom-center",
@@ -71,18 +76,6 @@ const ReservationAdmin = () => {
       progress: undefined,
       theme: "light",
     });
-  const notifyDangerInsert = () => {
-    toast.error("Veuillez vérifier les informations saisies", {
-      position: "bottom-center",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-    });
-  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -241,14 +234,6 @@ const ReservationAdmin = () => {
   const handleCloseEdit = () => {
     setOpenedit(false);
   };
-  const [openAdd, setOpenAdd] = React.useState(false);
-
-  const handleClickOpenAdd = () => {
-    setOpenAdd(true);
-  };
-  const handleCloseAdd = () => {
-    setOpenAdd(false);
-  };
 
   const [openDetail, setOpenDetail] = React.useState(false);
   const handleDetailOpen = () => {
@@ -285,7 +270,7 @@ const ReservationAdmin = () => {
 
   async function ListReservations() {
     axios
-      .get(variables.API_URL + "reservation/reservation")
+      .get(variables.API_URL + "reservation/reservationNonConfirme")
       .then((res) => setRows(res.data))
       .catch((err) => console.log(err));
   }
@@ -345,34 +330,6 @@ const ReservationAdmin = () => {
       .catch((error) => {
         notifyDanger();
       });
-  }
-
-  async function addReservation(event) {
-    event.preventDefault();
-    try {
-      await axios.post(variables.API_URL + "Reservation/ClientReservation", {
-        Designation,
-        NombreColis: MarchandiseNombre,
-        Poids: MarchandisePoids,
-        Volume: MarchandiseVolume,
-        Nature,
-        Tarif,
-        NomDestinataire,
-        DateExpeditionSouhaite,
-        ReservationExigences,
-        ReservationEtat,
-        ItineraireDepart,
-        ItineraireArrive,
-        ClientID,
-        VolID: 0,
-      });
-      handleCloseAdd();
-      ListReservations();
-      empty();
-      notify();
-    } catch (error) {
-      notifyDangerInsert();
-    }
   }
 
   const empty = () => {
@@ -471,7 +428,6 @@ const ReservationAdmin = () => {
     setEdEtat(m_etat);
     setEdDepart(m_depart);
     setEdArrive(m_arrive);
-    ListItineraireArrives(m_depart);
     handleClickOpenEdit();
   };
   async function EditReservation(x_id) {
@@ -507,31 +463,69 @@ const ReservationAdmin = () => {
   }
   return (
     <>
-      <Grid
-        sx={{ py: 3, px: 4, display: "flex", alignItems: "right", gap: "5px" }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 4,
+          gap: 2,
+        }}
       >
-        <Grid item xs={5} marginTop={0}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownload />}
-            onClick={handlePrint}
-          >
-            Exporter en pdf
-          </Button>
+        <Grid
+          sx={{
+            py: 3,
+            px: 4,
+            display: "flex",
+            alignItems: "right",
+            gap: "5px",
+          }}
+        >
+          <Grid item xs={5} marginTop={0}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<FileDownload />}
+              onClick={handlePrint}
+            >
+              Exporter en pdf
+            </Button>
+          </Grid>
+          <Grid item xs={4}></Grid>
         </Grid>
-        <Grid xs={2} item marginTop={0}>
-          <Button
-            onClick={handleClickOpenAdd}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Ajouter
-          </Button>
-        </Grid>
-        <Grid item xs={4}></Grid>
-      </Grid>
+        <Button
+          variant="contained"
+          sx={{
+            width: {
+              xs: "100%",
+              md: "auto",
+            },
+            backgroundColor: "#F6F4FF",
+            textTransform: "none",
+            p: 1.25,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            borderRadius: "12px",
+            fontFamily: "inherit",
+            fontSize: "14px",
+            fontWeight: "400",
+            color: "#5243C2",
+            "&.MuiButtonBase-root:hover": {
+              backgroundColor: "#F6F4FF",
+            },
+          }}
+          endIcon={<ArrowRight />}
+          onClick={navigateNotification}
+        >
+          Retour
+        </Button>
+      </Box>
 
       <div className="App wrapper">
         <Box sx={{ display: "flex", alignItems: "left" }}>
@@ -633,6 +627,9 @@ const ReservationAdmin = () => {
                                   label="ID"
                                   id="id"
                                   value={edId}
+                                  onChange={(event) => {
+                                    setEdId(event.target.value);
+                                  }}
                                   autoComplete="id"
                                   InputLabelProps={{
                                     style: {
@@ -996,458 +993,6 @@ const ReservationAdmin = () => {
                   Valider
                 </Button>
                 <Button autoFocus onClick={handleCloseEdit} color="error">
-                  Annuler
-                </Button>
-              </DialogActions>
-            </BootstrapDialog>
-            <BootstrapDialog
-              onClose={handleCloseAdd}
-              aria-labelledby="customized-dialog-title"
-              open={openAdd}
-            >
-              <DialogTitle
-                align="center"
-                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
-                color="#fff"
-                id="customized-dialog-title"
-              >
-                Ajouter une réservation
-              </DialogTitle>
-              <IconButton
-                aria-label="close"
-                onClick={handleCloseAdd}
-                sx={{
-                  position: "absolute",
-                  right: 8,
-                  top: 8,
-                  color: (theme) => theme.palette.grey[100],
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-              <DialogContent dividers>
-                <Box display="flex" flexDirection="column">
-                  <Grid
-                    container
-                    rowSpacing={1}
-                    columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-                  >
-                    <Grid item xs={12}>
-                      <Item>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: {
-                              xs: "column",
-                              md: "row",
-                            },
-                            justifyContent: "center",
-                            gap: 5,
-                            alignItems: "center",
-                          }}
-                        >
-                          <Box sx={{ flex: 1 }}>
-                            <Typography
-                              sx={{
-                                fontFamily: "Poppins",
-                                fontWeight: "400",
-                                fontSize: "16px",
-                                lineHeight: "32px",
-                                color: "#5B5B5B",
-                              }}
-                            >
-                              <Box
-                                //onSubmit={AddMarchandise}
-                                sx={{ mt: 0 }}
-                              >
-                                <Grid container spacing={3}>
-                                  <Grid item xs={12}>
-                                    <TextField
-                                      sx={{ width: 250 }}
-                                      size="small"
-                                      margin="normal"
-                                      required
-                                      fullWidth
-                                      name="designation"
-                                      label="Designation"
-                                      id="designation"
-                                      value={Designation}
-                                      onChange={(event) => {
-                                        setDesignation(event.target.value);
-                                      }}
-                                      autoComplete="designation"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={12}>
-                                    <TextField
-                                      sx={{ width: 250 }}
-                                      size="small"
-                                      margin="normal"
-                                      required
-                                      fullWidth
-                                      name="nombre"
-                                      label="Nombre de colis"
-                                      type="number"
-                                      id="nombre"
-                                      value={MarchandiseNombre}
-                                      onChange={(event) => {
-                                        setNombre(event.target.value);
-                                      }}
-                                      autoComplete="nombre"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={12}>
-                                    <TextField
-                                      sx={{ width: 250 }}
-                                      size="small"
-                                      margin="normal"
-                                      required
-                                      fullWidth
-                                      name="poids"
-                                      label="Poids(Kg)"
-                                      type="number"
-                                      id="poids"
-                                      value={MarchandisePoids}
-                                      onChange={(event) => {
-                                        setPoids(event.target.value);
-                                      }}
-                                      autoComplete="poids"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={12}>
-                                    <TextField
-                                      sx={{ width: 250 }}
-                                      size="small"
-                                      margin="normal"
-                                      required
-                                      fullWidth
-                                      name="volume"
-                                      label="Volume(dm3)"
-                                      type="number"
-                                      id="volume"
-                                      value={MarchandiseVolume}
-                                      onChange={(event) => {
-                                        setVolume(event.target.value);
-                                      }}
-                                      autoComplete="nombre"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={12}>
-                                    <FormControl fullWidth sx={{ width: 250 }}>
-                                      <InputLabel id="demo-simple-select-label">
-                                        Libelle
-                                      </InputLabel>
-                                      <Select
-                                        defaultValue={"Nature"}
-                                        labelId="demo-simple-select-label"
-                                        id="Nature"
-                                        value={Nature}
-                                        label="Nature marchandise"
-                                        size="small"
-                                        InputLabelProps={{
-                                          style: {
-                                            fontSize: 14,
-                                          },
-                                        }}
-                                        InputProps={{
-                                          style: {
-                                            fontSize: 14,
-                                          },
-                                        }}
-                                        onChange={(event) => {
-                                          setLibelle(event.target.value);
-                                        }}
-                                      >
-                                        {natures.map((nature, index) => (
-                                          <MenuItem
-                                            key={index}
-                                            value={
-                                              nature.NatureMarchandiseLibelle
-                                            }
-                                          >
-                                            {nature.id}-
-                                            {nature.NatureMarchandiseLibelle}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    </FormControl>
-                                  </Grid>
-                                </Grid>
-                              </Box>
-                            </Typography>
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
-                            <Box component="form">
-                              <Grid container spacing={1}>
-                                <Grid item xs={12}>
-                                  <TextField
-                                    sx={{ width: 250 }}
-                                    size="small"
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    name="destinataire"
-                                    label="Nom du destinataire"
-                                    id="destinatire"
-                                    value={NomDestinataire}
-                                    onChange={(event) => {
-                                      setNomDestinataire(event.target.value);
-                                    }}
-                                    autoComplete="destinataire"
-                                    InputLabelProps={{
-                                      style: {
-                                        fontSize: 14,
-                                      },
-                                    }}
-                                    InputProps={{
-                                      style: {
-                                        fontSize: 14,
-                                      },
-                                    }}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <LocalizationProvider
-                                    dateAdapter={AdapterDayjs}
-                                  >
-                                    <DemoContainer components={["DatePicker"]}>
-                                      <DatePicker
-                                        sx={{ width: 250 }}
-                                        size=""
-                                        defaultValue={dayjs(new Date())}
-                                        label="Date d'expédition souhaitée *"
-                                        format="DD/MM/YYYY"
-                                        value={dayjs(DateExpeditionSouhaite)}
-                                        onChange={(date) =>
-                                          setDateExpeditionSouhaite(date)
-                                        }
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            sx={{ width: "100%" }}
-                                          />
-                                        )}
-                                      />
-                                    </DemoContainer>
-                                  </LocalizationProvider>
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <TextField
-                                    sx={{ width: 250 }}
-                                    size="small"
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    name="exigence"
-                                    label="Exigences spéciales"
-                                    id="exigence"
-                                    value={ReservationExigences}
-                                    onChange={(event) => {
-                                      setReservationExigences(
-                                        event.target.value
-                                      );
-                                    }}
-                                    autoComplete="exigence"
-                                    InputLabelProps={{
-                                      style: {
-                                        fontSize: 14,
-                                      },
-                                    }}
-                                    InputProps={{
-                                      style: {
-                                        fontSize: 14,
-                                      },
-                                    }}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <FormControl
-                                    fullWidth
-                                    sx={{ marginTop: 1, width: 250 }}
-                                  >
-                                    <InputLabel id="demo-simple-select-label">
-                                      Départ
-                                    </InputLabel>
-                                    <Select
-                                      defaultValue={ItineraireDepart}
-                                      labelId="demo-simple-select-label"
-                                      id="ItineraireDepart"
-                                      value={ItineraireDepart}
-                                      label="Départ "
-                                      size="small"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      onChange={(event) => {
-                                        setDepart(event.target.value);
-                                      }}
-                                    >
-                                      {itineraireDeparts.map(
-                                        (itineraireD, index) => (
-                                          <MenuItem
-                                            key={index}
-                                            value={itineraireD}
-                                          >
-                                            {itineraireD}
-                                          </MenuItem>
-                                        )
-                                      )}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <FormControl
-                                    fullWidth
-                                    sx={{ marginTop: 1.5, width: 250 }}
-                                  >
-                                    <InputLabel id="demo-simple-select-label">
-                                      Destination
-                                    </InputLabel>
-                                    <Select
-                                      defaultValue={"ItineraireArrive"}
-                                      labelId="demo-simple-select-label"
-                                      id="ItineraireID"
-                                      value={ItineraireArrive}
-                                      label="Destination"
-                                      size="small"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      onChange={(event) => {
-                                        setArrive(event.target.value);
-                                      }}
-                                    >
-                                      {itineraireArrives.map(
-                                        (itineraireA, index) => (
-                                          <MenuItem
-                                            key={index}
-                                            value={itineraireA.ItineraireArrive}
-                                          >
-                                            {itineraireA.ItineraireArrive}
-                                          </MenuItem>
-                                        )
-                                      )}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <FormControl
-                                    fullWidth
-                                    sx={{ marginTop: 1.5, width: 250 }}
-                                  >
-                                    <InputLabel id="demo-simple-select-label">
-                                      Client
-                                    </InputLabel>
-                                    <Select
-                                      defaultValue={"ClientID"}
-                                      labelId="demo-simple-select-label"
-                                      id="ItineraireID"
-                                      value={ClientID}
-                                      label="Destination"
-                                      size="small"
-                                      InputLabelProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      InputProps={{
-                                        style: {
-                                          fontSize: 14,
-                                        },
-                                      }}
-                                      onChange={(event) => {
-                                        setIDClient(event.target.value);
-                                      }}
-                                    >
-                                      {clients.map((client, index) => (
-                                        <MenuItem key={index} value={client.id}>
-                                          {client.id}- {client.ClientNom}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                </Grid>
-                              </Grid>
-                              <div className="form-group">
-                                <input
-                                  hidden
-                                  type="text"
-                                  className="form-control"
-                                  id="MarchandiseID"
-                                  value={id}
-                                  onChange={(event) => {
-                                    setIDMarchandise(event.target.value);
-                                  }}
-                                />
-                              </div>
-                            </Box>
-                          </Box>
-                        </Box>
-                      </Item>
-                    </Grid>
-                  </Grid>
-                  <br />
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button autoFocus onClick={addReservation}>
-                  Réserver
-                </Button>
-                <Button autoFocus onClick={handleCloseAdd} color="error">
                   Annuler
                 </Button>
               </DialogActions>
@@ -1826,4 +1371,4 @@ const ReservationAdmin = () => {
   );
 };
 
-export default ReservationAdmin;
+export default ReservationNonConfirme;

@@ -1,18 +1,5 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import React from "react";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -22,26 +9,16 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import { styled } from "@mui/material/styles";
-import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
-import MiniDrawer from "../../views/MiniDrawer";
-import dateFormat from "dateformat";
-import { FormHelperText } from "@mui/material";
 import dayjs from "dayjs";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { useReactToPrint } from "react-to-print";
-import Check from "@mui/icons-material/Check";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "@mui/icons-material";
 
 const ReservationConfirmation = () => {
   const [open, setOpen] = React.useState(false);
@@ -52,6 +29,12 @@ const ReservationConfirmation = () => {
   };
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const navigate = useNavigate("");
+
+  const navigateEscale = () => {
+    navigate("/reservationNonConfirme");
   };
 
   const notifyDanger = () => {
@@ -123,7 +106,7 @@ const ReservationConfirmation = () => {
             color="success"
             size="small"
           >
-            <Check />
+            <Typography>Confirmer</Typography>
           </IconButton>
         </>
       ),
@@ -200,66 +183,79 @@ const ReservationConfirmation = () => {
         ListNotifications();
       })
       .catch((error) => {
-        console.log(error);
-      });
-  }
-  async function EditReservation(x_id) {
-    await axios
-      .put(variables.API_URL + "reservation/confirmer/" + x_id, {
-        id: ReservationID,
-        NomDestinataire: "",
-        DateExpeditionSouhaite: DateExpeditionSouhaite,
-        ReservationExigences: "",
-        ReservationEtat: "Confirmé",
-        ReservationDate: ReservationDate,
-        ClientID: ClientID,
-        MarchandiseID: MarchandiseID,
-        ItineraireID: ItineraireID,
-        VolID: VolID,
-      })
-      .then((reponse) => {
-        console.log(x_id);
-        handleClose();
-        notifyEdit();
-      })
-      .catch((error) => {
         notifyDanger();
-        console.log(error);
       });
   }
 
-  const Confirmer = (idNot, idRes) => {
+  const Confirmer = (idNot) => {
     EditNotification(idNot);
-    EditReservation(idRes);
   };
 
   return (
     <>
-      <Grid
-        sx={{ py: 3, px: 4, display: "flex", alignItems: "right", gap: "5px" }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 4,
+          gap: 2,
+        }}
       >
-        <Grid item xs={5} marginTop={0}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownload />}
-            onClick={handlePrint}
-          >
-            Exporter en pdf
-          </Button>
+        <Grid
+          sx={{
+            py: 3,
+            px: 4,
+            display: "flex",
+            alignItems: "right",
+            gap: "5px",
+          }}
+        >
+          <Grid item xs={5} marginTop={0}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<FileDownload />}
+              onClick={handlePrint}
+            >
+              Exporter en pdf
+            </Button>
+          </Grid>
+          <Grid item xs={4}></Grid>
         </Grid>
-        <Grid xs={2} item marginTop={0}>
-          <Button
-            //onClick={handleClickOpenAdd}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Ajouter
-          </Button>
-        </Grid>
-        <Grid item xs={4}></Grid>
-      </Grid>
+        <Button
+          variant="contained"
+          sx={{
+            width: {
+              xs: "100%",
+              md: "auto",
+            },
+            backgroundColor: "#F6F4FF",
+            textTransform: "none",
+            p: 1.25,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            borderRadius: "12px",
+            fontFamily: "inherit",
+            fontSize: "14px",
+            fontWeight: "400",
+            color: "#5243C2",
+            "&.MuiButtonBase-root:hover": {
+              backgroundColor: "#F6F4FF",
+            },
+          }}
+          endIcon={<ArrowRight />}
+          onClick={navigateEscale}
+        >
+          Voir les demandes de confirmation
+        </Button>
+      </Box>
 
       <div className="App wrapper">
         <Box sx={{ display: "flex", alignItems: "left" }}>
@@ -302,35 +298,6 @@ const ReservationConfirmation = () => {
                 }}
               />
             </div>
-
-            <Card>
-              <CardContent>
-                {rows.ClientNom} a demande la confirmation de sa réservation N:{" "}
-                {rows.ReservationID}
-                <IconButton
-                  onClick={() => {
-                    toggleEdit(
-                      rows.id,
-                      rows.ClientNom,
-                      rows.ClientID,
-                      rows.ReservationID,
-                      rows.NomDestinataire,
-                      rows.DateExpeditionSouhaite,
-                      rows.ReservationExigences,
-                      rows.ReservationDate,
-                      rows.MarchandiseID,
-                      rows.VolID,
-                      rows.ItineraireID
-                    );
-                  }}
-                  type="button"
-                  color="success"
-                  size="small"
-                >
-                  <Check />
-                </IconButton>
-              </CardContent>
-            </Card>
 
             <Dialog
               fullScreen={fullScreen}

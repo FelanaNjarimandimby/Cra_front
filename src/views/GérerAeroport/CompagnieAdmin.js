@@ -1,13 +1,4 @@
-import {
-  Box,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Grid, TextField } from "@mui/material";
 import React from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -22,7 +13,8 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import { ArrowRight } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
@@ -42,6 +34,12 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 const CompagnieAdmin = () => {
+  const navigate = useNavigate("");
+
+  const navigateAeroport = () => {
+    navigate("/aeroports");
+  };
+
   const notify = () =>
     toast.success("Insertion avec succès!", {
       position: "bottom-center",
@@ -53,6 +51,18 @@ const CompagnieAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -98,12 +108,12 @@ const CompagnieAdmin = () => {
 
   const [rows, setRows] = React.useState([]);
   const column = [
-    { field: "id", headerName: "ID", width: 5 },
-    { field: "CompagnieNom", headerName: "Nom", width: 150 },
+    { field: "id", headerName: "ID", width: 20 },
+    { field: "CompagnieNom", headerName: "Nom", width: 350 },
 
     {
       field: "action",
-      width: 80,
+      width: 150,
       headerName: "Action",
       renderCell: (params) => (
         <>
@@ -119,7 +129,9 @@ const CompagnieAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -127,34 +139,6 @@ const CompagnieAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteCompagnie(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -190,7 +174,6 @@ const CompagnieAdmin = () => {
     axios
       .get(variables.API_URL + "compagnie")
       .then((res) => setRows(res.data))
-      .then((res) => console.log(res.data))
       .catch((err) => console.log(err));
   }
   React.useEffect(() => {
@@ -198,6 +181,11 @@ const CompagnieAdmin = () => {
   }, []);
 
   const [CompagnieNom, setNom] = React.useState("");
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteCompagnie(index) {
     await axios
@@ -223,7 +211,7 @@ const CompagnieAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      notifyDanger();
+      notifyDangerInsert();
     }
   }
 
@@ -242,7 +230,7 @@ const CompagnieAdmin = () => {
     await axios
       .put(variables.API_URL + "compagnie/" + x_id, {
         id: edId,
-        ClientNom: ednom,
+        CompagnieNom: ednom,
       })
       .then((reponse) => {
         console.log(x_id);
@@ -258,31 +246,79 @@ const CompagnieAdmin = () => {
   }
   return (
     <>
-      <Grid
-        sx={{ py: 3, px: 4, display: "flex", alignItems: "right", gap: "5px" }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 4,
+          gap: 2,
+        }}
       >
-        <Grid item xs={5} marginTop={0}>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<FileDownload />}
-            onClick={handlePrint}
-          >
-            Exporter en pdf
-          </Button>
+        <Grid
+          sx={{
+            py: 3,
+            px: 4,
+            display: "flex",
+            alignItems: "right",
+            gap: "5px",
+          }}
+        >
+          <Grid item xs={5} marginTop={0}>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<FileDownload />}
+              onClick={handlePrint}
+            >
+              Exporter en pdf
+            </Button>
+          </Grid>
+          <Grid xs={2} item marginTop={0}>
+            <Button
+              onClick={handleClickOpenAdd}
+              variant="outlined"
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              Ajouter
+            </Button>
+          </Grid>
+          <Grid item xs={4}></Grid>
         </Grid>
-        <Grid xs={2} item marginTop={0}>
-          <Button
-            onClick={handleClickOpenAdd}
-            variant="outlined"
-            startIcon={<AddIcon />}
-            size="small"
-          >
-            Nouvelle
-          </Button>
-        </Grid>
-        <Grid item xs={4}></Grid>
-      </Grid>
+        <Button
+          variant="contained"
+          sx={{
+            width: {
+              xs: "100%",
+              md: "auto",
+            },
+            backgroundColor: "#F6F4FF",
+            textTransform: "none",
+            p: 1.25,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0.5,
+            borderRadius: "12px",
+            fontFamily: "inherit",
+            fontSize: "14px",
+            fontWeight: "400",
+            color: "#5243C2",
+            "&.MuiButtonBase-root:hover": {
+              backgroundColor: "#F6F4FF",
+            },
+          }}
+          endIcon={<ArrowRight />}
+          onClick={navigateAeroport}
+        >
+          Les aéroports
+        </Button>
+      </Box>
 
       <div className="App wrapper">
         <Box sx={{ display: "flex", alignItems: "left" }}>
@@ -420,14 +456,43 @@ const CompagnieAdmin = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
                 <Button autoFocus onClick={addCompagnie}>
                   Ajouter
                 </Button>
+                <Button autoFocus color="error" onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer la compagnie avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteCompagnie(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

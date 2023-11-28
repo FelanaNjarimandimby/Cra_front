@@ -15,11 +15,12 @@ import {
   PriceChange,
   AirplaneTicket,
   Airlines,
+  Traffic,
 } from "@mui/icons-material";
 
 export const SidebarData = [
   {
-    title: "Tableau de bord",
+    title: "Recettes commerciales",
     path: "/accueil",
     icon: <Dashboard />,
   },
@@ -112,9 +113,10 @@ export const SidebarData = [
       },
     ],
   },
+
   {
     title: "Agent",
     path: "/agents",
-    icon: <SupportAgent />,
+    icon: <Traffic />,
   },
 ];

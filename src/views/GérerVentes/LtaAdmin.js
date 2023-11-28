@@ -23,16 +23,13 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { variables } from "../../Variables";
 import axios from "axios";
-import MiniDrawer from "../../views/MiniDrawer";
 import dateFormat from "dateformat";
-import { FormHelperText } from "@mui/material";
 import dayjs from "dayjs";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -42,6 +39,8 @@ import { useReactToPrint } from "react-to-print";
 import { useNavigate } from "react-router-dom";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { ArrowRight } from "@mui/icons-material";
+import { useState } from "react";
+import Check from "@material-ui/icons/Check";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -51,6 +50,26 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     padding: theme.spacing(1),
   },
 }));
+
+const style = {
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    border: "1px solid black",
+  },
+
+  th: {
+    border: "1px solid black",
+    backgroundColor: "#f2f2f2",
+    padding: "8px",
+    textAlign: "left",
+  },
+  td: {
+    border: "1px solid black",
+    padding: "8px",
+    textAlign: "left",
+  },
+};
 
 const LtaAdmin = () => {
   const notify = () =>
@@ -64,6 +83,18 @@ const LtaAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -107,6 +138,12 @@ const LtaAdmin = () => {
     onAfterPrint: () => alert("Impréssion terminé"),
   });
 
+  const handlePrintLTA = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: "Lettre de Transport Aérien",
+    onAfterPrint: () => alert("Impréssion terminé"),
+  });
+
   const [rows, setRows] = React.useState([]);
   const column = [
     { field: "id", headerName: "ID", width: 100 },
@@ -125,8 +162,8 @@ const LtaAdmin = () => {
 
     {
       field: "action",
-      width: 100,
       headerName: "Action",
+      width: 250,
 
       renderCell: (params) => (
         <>
@@ -147,7 +184,9 @@ const LtaAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -155,34 +194,15 @@ const LtaAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
+          <IconButton
+            onClick={() => {
+              ToggleGenererLTA(params.row.LTANumero);
+            }}
+            type="button"
+            size="small"
           >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteLta(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
+            Générer LTA <ArrowRight />
+          </IconButton>
         </>
       ),
     },
@@ -214,6 +234,26 @@ const LtaAdmin = () => {
     setOpenAdd(false);
   };
 
+  const [openLTA, setOpenLTA] = React.useState(false);
+
+  const handleOpenLta = () => {
+    setOpenLTA(true);
+  };
+
+  const handleCloseLta = () => {
+    setOpenLTA(false);
+  };
+
+  const [openGenererLTA, setOpenGenererLTA] = React.useState(false);
+
+  const handleOpenGenererLta = () => {
+    setOpenGenererLTA(true);
+  };
+
+  const handleCloseGenererLta = () => {
+    setOpenGenererLTA(false);
+  };
+
   async function ListLtas() {
     axios
       .get(variables.API_URL + "lta")
@@ -229,6 +269,37 @@ const LtaAdmin = () => {
   const [LTADateEmission, setDate] = React.useState(dayjs(new Date()));
   const [VenteID, setIDVente] = React.useState("");
 
+  //Générer LTA
+  const [demanderId, setDemanderId] = useState("");
+  const [ltas, setLtas] = React.useState([]);
+  const [AgentNom, setAgentNom] = React.useState("");
+  const [AgentContact, setAgentContact] = React.useState("");
+  const [ClientNom, setClientNom] = React.useState("");
+  const [ClientContact, setClientContact] = React.useState("");
+  const [Destinataire, setDestinataire] = React.useState("");
+  const [MarchandiseDesignation, setMarDesignation] = React.useState("");
+  const [MarchandiseNombre, setNombre] = React.useState("");
+  const [MarchandisePoids, setPoids] = React.useState("");
+  const [MarchandiseVolume, setVolume] = React.useState("");
+  const [Nature, setNature] = React.useState("");
+  const [Tarif, setTarifLibelle] = React.useState("");
+  const [VolNumero, setVolNumero] = React.useState("");
+  const [DateHeureDepart, setDateDepart] = React.useState(dayjs(new Date()));
+  const [DateHeureArrive, setDateArrivee] = React.useState(dayjs(new Date()));
+  const [ItineraireDepart, setItineraireDepart] = React.useState("");
+  const [ItineraireArrive, setItineraireArrive] = React.useState("");
+  const [AvionModele, setAvionModele] = React.useState("");
+  const [AvionCapacite, setAvionCapacite] = React.useState("");
+  const [AeroportNom, setAeroportNom] = React.useState("");
+  const [AeroportContact, setAeroportContact] = React.useState("");
+  const [AeroportLocalisation, setAeroportLocalisation] = React.useState("");
+  const [CompagnieNom, setCompagnieNom] = React.useState("");
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
+
   async function deleteLta(index) {
     await axios
       .delete(variables.API_URL + "lta/" + index)
@@ -242,6 +313,22 @@ const LtaAdmin = () => {
       });
   }
 
+  //Ajouter une LTA
+  const ToggleGenererLTA = (ltanumero) => {
+    setNumero(ltanumero);
+    handleOpenGenererLta();
+  };
+
+  async function postIDLta(event, ltanum) {
+    event.preventDefault();
+    await axios
+      .post(variables.API_URL + "lta/getID?LTANumero=" + ltanum)
+      .then((res) => {
+        setLtas(res.data);
+        handleCloseLta();
+      })
+      .catch((error) => alert(error));
+  }
   async function addLta(event) {
     event.preventDefault();
     try {
@@ -255,7 +342,7 @@ const LtaAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -297,7 +384,7 @@ const LtaAdmin = () => {
   const navigate = useNavigate("");
 
   const navigateGenererLTA = () => {
-    navigate("/generer_lta");
+    navigate("/vente");
   };
   return (
     <>
@@ -371,7 +458,7 @@ const LtaAdmin = () => {
           endIcon={<ArrowRight />}
           onClick={navigateGenererLTA}
         >
-          Générer LTA
+          Gérer les ventes
         </Button>
       </Box>
 
@@ -424,7 +511,8 @@ const LtaAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Modification du LTA
@@ -465,6 +553,7 @@ const LtaAdmin = () => {
                         renderInput={(params) => (
                           <TextField {...params} sx={{ width: "100%" }} />
                         )}
+                        sx={{ marginTop: 1.5, width: 500 }}
                       />
                     </DemoContainer>
                   </LocalizationProvider>
@@ -493,7 +582,8 @@ const LtaAdmin = () => {
             >
               <DialogTitle
                 align="center"
-                sx={{ m: 0, p: 2 }}
+                sx={{ m: 0, p: 2, backgroundColor: "#6D071A" }}
+                color="#fff"
                 id="customized-dialog-title"
               >
                 Ajout d'une LTA
@@ -535,7 +625,7 @@ const LtaAdmin = () => {
                           renderInput={(params) => (
                             <TextField {...params} sx={{ width: "100%" }} />
                           )}
-                          sx={{ marginTop: 1.5 }}
+                          sx={{ marginTop: 1.5, width: 500 }}
                         />
                       </DemoContainer>
                     </LocalizationProvider>
@@ -556,14 +646,265 @@ const LtaAdmin = () => {
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button autoFocus onClick={handleCloseAdd}>
-                  Annuler
-                </Button>
                 <Button autoFocus onClick={addLta}>
                   Ajouter
                 </Button>
+                <Button autoFocus color="error" onClick={handleCloseAdd}>
+                  Annuler
+                </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer la Lettre de Transport Aérien
+                  avec l'identifiant {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteLta(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            <Dialog open={openGenererLTA} onClose={handleCloseGenererLta}>
+              <DialogTitle>Lettre de Transport Aérien</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Pour générer la Lettre de Transport Aérien, veuillez confirmer
+                  le numéro du LTA
+                </DialogContentText>
+                <div>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: {
+                        xs: "column",
+                        md: "row",
+                      },
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: -2,
+                      gap: 0,
+                    }}
+                  >
+                    <Grid
+                      sx={{
+                        py: 5,
+                        display: "flex",
+                        alignItems: "right",
+                        gap: 2,
+                      }}
+                    >
+                      <Grid item xs={5} marginTop={0}>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<Check />}
+                          onClick={handleOpenLta}
+                        >
+                          Confirmer le numero du LTA
+                        </Button>
+                      </Grid>
+                    </Grid>
+                    <Button
+                      onClick={handlePrintLTA}
+                      variant="outlined"
+                      startIcon={<FileDownload />}
+                      size="small"
+                    >
+                      Générer LTA
+                    </Button>
+                  </Box>
+
+                  <Dialog open={openLTA} onClose={handleCloseLta}>
+                    <DialogTitle>Lettre de Transport Aérien</DialogTitle>
+                    <DialogContent>
+                      <DialogContentText>
+                        Pour générer la Lettre de Transport Aérien, veuillez
+                        insérer le numéro du LTA
+                      </DialogContentText>
+                      <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="Numéro du LTA"
+                        type="texte"
+                        fullWidth
+                        variant="standard"
+                        value={LTANumero}
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        onClick={(event) => {
+                          postIDLta(event, LTANumero);
+                        }}
+                      >
+                        Générer LTA
+                      </Button>
+                      <Button onClick={handleCloseLta}>Annuler</Button>
+                    </DialogActions>
+                  </Dialog>
+
+                  <div>
+                    <div
+                      ref={componentRef}
+                      style={{ width: "100%", height: window.innerHeight }}
+                    >
+                      <div className="classValide">
+                        <div className="valide" style={{ textAlign: "left" }}>
+                          {
+                            <table style={style.table}>
+                              <tr style={style.tr}>
+                                <th colSpan="2" style={style.th}>
+                                  Lettre de Transport Aérien
+                                </th>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Date LTA</th>
+                                <td style={style.td}>
+                                  {dateFormat(
+                                    ltas.LTADateEmission,
+                                    "dd/mm/yyyy"
+                                  )}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Numéro LTA</th>
+                                <td style={style.td}>{ltas.LTANumero}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Compagnie</th>
+                                <td style={style.td}>{ltas.CompagnieNom}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Aéroport</th>
+                                <td style={style.td}>{ltas.AeroportNom}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Aéroport contact</th>
+                                <td style={style.td}>{ltas.AeroportContact}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Aéroport Localisation</th>
+                                <td style={style.td}>
+                                  {ltas.AeroportLocalisation}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Avion Modèle</th>
+                                <td style={style.td}>{ltas.AvionModele}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Avion Capacité</th>
+                                <td style={style.td}>{ltas.AvionCapacite}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Numéro du vol</th>
+                                <td style={style.td}>{ltas.VolNumero}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Date et heure départ</th>
+                                <td style={style.td}>{ltas.DateHeureDepart}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Date et heure arrivé</th>
+                                <td style={style.td}>{ltas.DateHeureArrive}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Itinéraire départ</th>
+                                <td style={style.td}>
+                                  {ltas.ItineraireDepart}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Itinéraire destination</th>
+                                <td style={style.td}>
+                                  {ltas.ItineraireArrive}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Nom du client </th>
+                                <td style={style.td}>{ltas.ClientNom}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Contact du client</th>
+                                <td style={style.td}>{ltas.ClientContact}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Nom de l'agent </th>
+                                <td style={style.td}>{ltas.AgentNom}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Contact de l'agent</th>
+                                <td style={style.td}>{ltas.AgentContact}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>
+                                  Désignation de la marchandise
+                                </th>
+                                <td style={style.td}>
+                                  {ltas.MarchandiseDesignation}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Nombre du marchandise</th>
+                                <td style={style.td}>
+                                  {ltas.MarchandiseNombre}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Poids net</th>
+                                <td style={style.td}>
+                                  {ltas.MarchandisePoids}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Volume</th>
+                                <td style={style.td}>
+                                  {ltas.MarchandiseVolume}
+                                </td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Nature</th>
+                                <td style={style.td}>{ltas.Nature}</td>
+                              </tr>
+                              <tr style={style.tr}>
+                                <th style={style.th}>Tarif</th>
+                                <td style={style.td}>{ltas.Tarif}</td>
+                              </tr>
+                            </table>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+              <DialogActions>
+                <Button color="error" onClick={handleCloseGenererLta}>
+                  Fermer
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>

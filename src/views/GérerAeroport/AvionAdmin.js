@@ -13,7 +13,6 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import { ToastContainer, toast } from "react-toastify";
@@ -44,6 +43,18 @@ const AvionAdmin = () => {
       progress: undefined,
       theme: "light",
     });
+  const notifyDangerInsert = () => {
+    toast.error("Veuillez vérifier les informations saisies", {
+      position: "bottom-center",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  };
   const notifyDanger = () => {
     toast.error("Une erreur est survenue !", {
       position: "bottom-center",
@@ -89,13 +100,13 @@ const AvionAdmin = () => {
 
   const [rows, setRows] = React.useState([]);
   const column = [
-    { field: "id", headerName: "ID", width: 5 },
-    { field: "AvionModele", headerName: "Modele" },
-    { field: "AvionCapacite", headerName: "Capacite" },
+    { field: "id", headerName: "ID", width: 20 },
+    { field: "AvionModele", headerName: "Modele", width: 250 },
+    { field: "AvionCapacite", headerName: "Capacite", width: 300 },
 
     {
       field: "action",
-      width: 70,
+      width: 150,
       headerName: "Action",
       renderCell: (params) => (
         <>
@@ -115,7 +126,9 @@ const AvionAdmin = () => {
             <EditIcon />
           </IconButton>
           <IconButton
-            onClick={handleClickOpen}
+            onClick={() => {
+              toggleDelete(params.row.id);
+            }}
             type="button"
             className="btn btn-danger"
             color="error"
@@ -123,34 +136,6 @@ const AvionAdmin = () => {
           >
             <DeleteIcon />
           </IconButton>
-          <Dialog
-            fullScreen={fullScreen}
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="responsive-dialog-title"
-          >
-            <DialogTitle id="responsive-dialog-title">
-              {"Confirmation"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Voulez vous vraiment supprimer cette information?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => {
-                  deleteAvion(params.row.id);
-                }}
-                autoFocus
-              >
-                Supprimer
-              </Button>
-              <Button autoFocus onClick={handleClose} color="error">
-                Annuler
-              </Button>
-            </DialogActions>
-          </Dialog>
         </>
       ),
     },
@@ -186,7 +171,6 @@ const AvionAdmin = () => {
     axios
       .get(variables.API_URL + "avioncargo")
       .then((res) => setRows(res.data))
-      .then((res) => console.log(res.data))
       .catch((err) => console.log(err));
   }
   React.useEffect(() => {
@@ -195,6 +179,11 @@ const AvionAdmin = () => {
 
   const [AvionModele, setModele] = React.useState("");
   const [AvionCapacite, setCapacite] = React.useState("");
+
+  const toggleDelete = (ident) => {
+    setEdId(ident);
+    handleClickOpen();
+  };
 
   async function deleteAvion(index) {
     await axios
@@ -221,7 +210,7 @@ const AvionAdmin = () => {
       empty();
       notify();
     } catch (error) {
-      alert(error);
+      notifyDangerInsert();
     }
   }
 
@@ -243,8 +232,8 @@ const AvionAdmin = () => {
     await axios
       .put(variables.API_URL + "avioncargo/" + x_id, {
         id: edId,
-        ItineraireDepart: edmodele,
-        ItineraireArrive: edcapacite,
+        AvionModele: edmodele,
+        AvionCapacite: edcapacite,
       })
       .then((reponse) => {
         console.log(x_id);
@@ -454,6 +443,35 @@ const AvionAdmin = () => {
                 </Button>
               </DialogActions>
             </BootstrapDialog>
+            <Dialog
+              fullScreen={fullScreen}
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="responsive-dialog-title"
+            >
+              <DialogTitle id="responsive-dialog-title">
+                {"Confirmation"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Voulez vous vraiment supprimer l'avion avec l'identifiant{" "}
+                  {edId} ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    deleteAvion(edId);
+                  }}
+                  autoFocus
+                >
+                  Supprimer
+                </Button>
+                <Button autoFocus onClick={handleClose} color="error">
+                  Annuler
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         </Box>
       </div>
